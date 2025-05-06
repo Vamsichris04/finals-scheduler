@@ -3,261 +3,194 @@
 const User  = require('../models/User');
 const Final = require('../models/Final');
 
-// === CONFIG ===
-const businessHours = {
-    '2025-05-12': ['07:30', '20:00'],
-    '2025-05-13': ['07:30', '20:00'],
-    '2025-05-14': ['07:30', '20:00'],
-    '2025-05-15': ['07:30', '20:00'],
-    '2025-05-16': ['07:30', '17:00'],
-};
-
-const TARGET_HOURS = 15;
-const MAX_HOURS    = 20;
+// ─── CONFIG ────────────────────────────────────────────────────────────────────
+const TARGET_HOURS = 15;   // aim for 15 hrs/week
+const MAX_HOURS    = 20;   // hard cap
 
 const WINDOW_MIN = 1, WINDOW_MAX = 2;
 const REMOTE_MIN = 2, REMOTE_MAX = 4;
 
-// === HELPERS ===
+/**
+ * For finals week we’ll break each day into three 4 hr slices:
+ *   7:30–11:30, 11:30–15:30 and 15:30–19:30 (or 17:30 on Fri).
+ * Feel free to adjust or derive these dynamically if you like.
+ */
+const DAY_SLICES = {
+  '2025-05-12': [['07:30','11:30'], ['11:30','15:30'], ['15:30','19:30']],
+  '2025-05-13': [['07:30','11:30'], ['11:30','15:30'], ['15:30','19:30']],
+  '2025-05-14': [['07:30','11:30'], ['11:30','15:30'], ['15:30','19:30']],
+  '2025-05-15': [['07:30','11:30'], ['11:30','15:30'], ['15:30','19:30']],
+  // Friday closes at 17:00
+  '2025-05-16': [['07:30','11:30'], ['11:30','15:30']],
+};
+
+// ─── HELPERS ───────────────────────────────────────────────────────────────────
 function toMinutes(hm) {
-    const [h, m] = hm.split(':').map(Number);
-    return h * 60 + m;
+  const [h,m] = hm.split(':').map(Number);
+  return h*60 + m;
 }
 function toTime(mins) {
-    const h = String(Math.floor(mins / 60)).padStart(2, '0');
-    const m = String(mins % 60).padStart(2, '0');
-    return `${h}:${m}`;
+  const h = String(Math.floor(mins/60)).padStart(2,'0');
+  const m = String(mins%60).padStart(2,'0');
+  return `${h}:${m}`;
 }
-
-function roundUpToHour(minutes) {
-    return Math.ceil(minutes / 60) * 60;
-}
-
-// Build flexible time blocks for a day, ending on the hour
-function generateTimeBlocksForDay(dateStr, start, end) {
-    const out = [];
-    let cur = roundUpToHour(toMinutes(start));
-    const endMin = toMinutes(end);
-    const minBlockSize = 120; // 2 hours in minutes
-
-    while (cur < endMin) {
-        for (let duration = 120; duration <= 240; duration += 60) { // 2, 3, or 4 hour blocks
-            const blockEnd = cur + duration;
-            if (blockEnd <= endMin && blockEnd % 60 === 0) {
-                out.push({
-                    date: new Date(dateStr),
-                    startTime: toTime(cur),
-                    endTime: toTime(blockEnd),
-                });
-            }
-        }
-        cur += 60; // Move by the smallest time unit (1 hour for potential starts)
-    }
-
-    // Simple approach to avoid too many overlapping blocks: filter and ensure reasonable spacing
-    const filteredOut = [];
-    if (out.length > 0) {
-        filteredOut.push(out[0]);
-        for (let i = 1; i < out.length; i++) {
-            const lastBlockEnd = toMinutes(filteredOut[filteredOut.length - 1].endTime);
-            if (toMinutes(out[i].startTime) >= lastBlockEnd) {
-                filteredOut.push(out[i]);
-            }
-        }
-    }
-    return filteredOut;
-}
-
-// Does shift conflict exam?
+/**
+ * Return true if shift [startTime,endTime] on shift.date
+ * overlaps the exam slot.
+ */
 function isConflict(shift, exam) {
-    if (!exam.date) return false;
-    if (shift.date.toDateString() !== new Date(exam.date).toDateString()) return false;
-    const s0 = toMinutes(shift.startTime), s1 = toMinutes(shift.endTime);
-    const e0 = toMinutes(exam.startTime),  e1 = toMinutes(exam.endTime);
-    return s0 < e1 && s1 > e0;
+  if (!exam.date) return false;
+  if (shift.date.toDateString() !== new Date(exam.date).toDateString())
+    return false;
+  const s0 = toMinutes( shift.startTime ),
+        s1 = toMinutes( shift.endTime   );
+  const e0 = toMinutes( exam.startTime ),
+        e1 = toMinutes( exam.endTime   );
+  return s0 < e1 && s1 > e0;
 }
 
-// Stage-based eligible finder
-function findEligible(users, finals, shift, hoursWorked, dur, minStage) {
-    return users.filter(u => {
-        if (!u.isActive) return false;
-        if (u.isCommuter && toMinutes(shift.startTime) < 9 * 60) return false;
-        if ((hoursWorked[u._id] || 0) + dur > (minStage === 2 ? MAX_HOURS : TARGET_HOURS)) return false;
-        const myExams = finals.filter(f => f.userId?.toString() === u._id.toString());
-        return !myExams.some(ex => isConflict(shift, ex));
-    });
-}
-
-// pick up to N workers by least‐hours (with round robin tie-breaker)
-function pickWorkers(pool, hoursWorked, N, lastAssigned = {}) {
-    pool.sort((a, b) => {
-        const hoursA = hoursWorked[a._id] || 0;
-        const hoursB = hoursWorked[b._id] || 0;
-
-        // Prioritize workers below TARGET_HOURS
-        if (hoursA < TARGET_HOURS && hoursB >= TARGET_HOURS) return -1;
-        if (hoursB < TARGET_HOURS && hoursA >= TARGET_HOURS) return 1;
-
-        // Sort by least hours worked
-        if (hoursA !== hoursB) return hoursA - hoursB;
-
-        // Round-robin tie-breaker
-        return (lastAssigned[a._id] || 0) - (lastAssigned[b._id] || 0);
-    });
-    return pool.slice(0, N);
-}
-
-// Calculate free time for workers
-function calculateFreeTime(businessHours, finals) {
-  // Subtract finals from business hours to get free time
-  // Return an array of free intervals for each worker
-}
-
-// Balance hours across workers
-function balanceHours(schedule, users, hoursWorked) {
-  const underworkedUsers = users.filter(u => hoursWorked[u._id] < TARGET_HOURS);
-
-  underworkedUsers.forEach(user => {
-    let neededHours = TARGET_HOURS - hoursWorked[user._id];
-
-    schedule.forEach(shift => {
-      if (neededHours <= 0) return;
-      if (shift.shiftType !== 'Remote' || shift.assignedTo.length >= 4) return;
-
-      const duration = Math.min(4, TARGET_HOURS - hoursWorked[user._id]);
-      if (hoursWorked[user._id] + duration > MAX_HOURS) return;
-
-      const hasConflict = shift.assignedTo.some(w => w._id === user._id);
-      if (hasConflict) return;
-
-      shift.assignedTo.push({ _id: user._id, name: user.name });
-      hoursWorked[user._id] += duration;
-      neededHours -= duration;
-    });
+/**
+ * Filter `users` who:
+ *  • are active
+ *  • respect commuter‐before-9 AM rule
+ *  • have no exam conflict
+ *  • would not exceed the given `hourCap` by taking a shift of length `dur`
+ */
+function findEligible(users, finals, shift, hoursWorked, dur, hourCap) {
+  return users.filter(u => {
+    if (!u.isActive)                return false;
+    if (u.isCommuter && toMinutes(shift.startTime) < 9*60)
+                                    return false;
+    if ((hoursWorked[u._id]||0) + dur > hourCap)
+                                    return false;
+    // no exam conflict
+    const myExams = finals.filter(f => f.userId?.toString() === u._id.toString());
+    return !myExams.some(exam => isConflict(shift, exam));
   });
 }
 
-// ================= MAIN =================
-async function autoAssignFinals() {
-    const users  = await User.find({ isActive: true });
-    const finals = await Final.find();
+/**
+ * Pick up to N workers from `pool` by:
+ *  1) Favour those < TARGET_HOURS
+ *  2) Then by least hoursWorked
+ *  3) Then by who was assigned least‐recently
+ */
+function pickWorkers(pool, hoursWorked, N, lastAssigned) {
+  const arr = [...pool];
+  arr.sort((a,b) => {
+    const ha = hoursWorked[a._id]||0, hb = hoursWorked[b._id]||0;
+    // favour under TARGET_HOURS
+    if (ha < TARGET_HOURS && hb >= TARGET_HOURS) return -1;
+    if (hb < TARGET_HOURS && ha >= TARGET_HOURS) return 1;
+    // then least hours
+    if (ha !== hb) return ha - hb;
+    // then round-robin tie-break
+    return (lastAssigned[a._id]||0) - (lastAssigned[b._id]||0);
+  });
+  return arr.slice(0, N);
+}
 
-    const core     = users.filter(u => !u.isFloater);
-    const floaters = users.filter(u => u.isFloater);
-
-    const schedule   = [];
-    const violations = [];
-    const hoursWorked = {};
-    const lastAssignedWindow = {};
-    const lastAssignedRemote = {};
-    users.forEach(u => hoursWorked[u._id] = 0);
-
-    // iterate each day/ block
-    for (const [dateStr, [bs, be]] of Object.entries(businessHours)) {
-        const blocks = generateTimeBlocksForDay(dateStr, bs, be);
-
-        for (const block of blocks) {
-            const dur = (toMinutes(block.endTime) - toMinutes(block.startTime)) / 60;
-
-            // --- Find all eligible workers for this block ---
-            let eligibleCore = findEligible(core, finals, block, hoursWorked, dur, 1);
-            if (!eligibleCore.length) eligibleCore = findEligible(core, finals, block, hoursWorked, dur, 2);
-            let eligibleFloaters = findEligible(floaters, finals, block, hoursWorked, dur, 2);
-            const allEligible = [...eligibleCore, ...eligibleFloaters];
-
-            console.log(`Assigning shift: ${block.startTime}–${block.endTime}`);
-            console.log(`Eligible workers: ${allEligible.map(u => u.name).join(', ')}`);
-
-            // --- Assign Window ---
-            const currentWindowAssignments = schedule.filter(s =>
-                s.shiftType === 'Window' &&
-                s.date.toDateString() === block.date.toDateString() &&
-                toMinutes(s.startTime) === toMinutes(block.startTime)
-            ).length;
-
-            const neededWindow = Math.max(0, WINDOW_MIN - currentWindowAssignments);
-            const canAssignWindow = Math.min(WINDOW_MAX - currentWindowAssignments, allEligible.length);
-            const numToAssignWindow = Math.min(canAssignWindow, neededWindow);
-
-            const windowEligible = allEligible.filter(u => !schedule.some(s =>
-                s.shiftType === 'Window' &&
-                s.date.toDateString() === block.date.toDateString() &&
-                toMinutes(s.startTime) === toMinutes(block.startTime) &&
-                s.assignedTo.some(assignee => assignee._id.toString() === u._id.toString())
-            ));
-
-            const windowWorkers = pickWorkers(windowEligible, hoursWorked, numToAssignWindow, lastAssignedWindow);
-            if (windowWorkers.length < neededWindow) {
-                violations.push(`Window undercovered ${dateStr} ${block.startTime}`);
-            }
-            if (windowWorkers.length < WINDOW_MIN) {
-                // Assign floaters to fill the gap
-            }
-            schedule.push({
-                date: block.date, startTime: block.startTime, endTime: block.endTime,
-                shiftType: 'Window',
-                assignedTo: windowWorkers.map(u => ({ _id: u._id, name: u.name }))
-            });
-            windowWorkers.forEach(u => { hoursWorked[u._id] += dur; lastAssignedWindow[u._id] = Date.now(); });
-
-            // --- Assign Remote ---
-            const currentRemoteAssignments = schedule.filter(s =>
-                s.shiftType === 'Remote' &&
-                s.date.toDateString() === block.date.toDateString() &&
-                toMinutes(s.startTime) === toMinutes(block.startTime)
-            ).length;
-
-            const neededRemote = Math.max(0, REMOTE_MIN - currentRemoteAssignments);
-            const canAssignRemote = Math.min(REMOTE_MAX - currentRemoteAssignments, allEligible.length - windowWorkers.length);
-            const numToAssignRemote = Math.min(canAssignRemote, neededRemote);
-
-            const remoteEligible = allEligible.filter(u =>
-                !windowWorkers.some(ww => ww._id.toString() === u._id.toString()) &&
-                !schedule.some(s =>
-                    s.shiftType === 'Remote' &&
-                    s.date.toDateString() === block.date.toDateString() &&
-                    toMinutes(s.startTime) === toMinutes(block.startTime) &&
-                    s.assignedTo.some(assignee => assignee._id.toString() === u._id.toString())
-                )
-            );
-
-            const remoteWorkers = pickWorkers(remoteEligible, hoursWorked, numToAssignRemote, lastAssignedRemote);
-            if (remoteWorkers.length < neededRemote) {
-                violations.push(`Remote undercovered ${dateStr} ${block.startTime}`);
-            }
-            if (remoteWorkers.length < REMOTE_MIN) {
-                // Assign floaters to fill the gap
-            }
-            schedule.push({
-                date: block.date, startTime: block.startTime, endTime: block.endTime,
-                shiftType: 'Remote',
-                assignedTo: remoteWorkers.map(u => ({ _id: u._id, name: u.name }))
-            });
-            remoteWorkers.forEach(u => { hoursWorked[u._id] += dur; lastAssignedRemote[u._id] = Date.now(); });
-        }
+/**
+ * After initial pass, loop through under-TARGET_HOURS users
+ * and add them to any REMOTE slice that still has < REMOTE_MAX.
+ */
+function balanceHours(schedule, coreUsers, hoursWorked, finals) {
+  const under = coreUsers.filter(u => (hoursWorked[u._id]||0) < TARGET_HOURS);
+  under.forEach(u => {
+    let need = TARGET_HOURS - (hoursWorked[u._id]||0);
+    for (let shift of schedule) {
+      if (need <= 0) break;
+      if (shift.shiftType !== 'Remote') continue;
+      if (shift.assignedTo.length >= REMOTE_MAX) continue;
+      // no double‐up
+      if (shift.assignedTo.some(x => x._id.toString() === u._id.toString()))
+        continue;
+      // no exam conflict
+      if (finals.some(f => f.userId?.toString()===u._id.toString() && isConflict(shift,f)))
+        continue;
+      // add them
+      shift.assignedTo.push({ _id:u._id, name:u.name });
+      const dur = (toMinutes(shift.endTime)-toMinutes(shift.startTime))/60;
+      hoursWorked[u._id] += dur;
+      need -= dur;
     }
+  });
+}
 
-    // summary of under-target
-    const under = users
-        .filter(u => (hoursWorked[u._id] || 0) < TARGET_HOURS)
-        .map(u => ({ name: u.name, hours: (hoursWorked[u._id] || 0).toFixed(2) }));
+// ─── MAIN ─────────────────────────────────────────────────────────────────────
+async function autoAssignFinals() {
+  const users  = await User.find({ isActive:true });
+  const finals = await Final.find();
 
-    // Log total hours for each worker
-    console.log('=== Total Hours Worked (Monday through Friday) ===');
-    users.forEach(u => {
-        const hrs = (hoursWorked[u._id] || 0).toFixed(2);
-        console.log(`User: ${u.name}, Total Hours: ${hrs}`);
-    });
+  const core     = users.filter(u => !u.isFloater);
+  const floaters = users.filter(u =>  u.isFloater);
 
-    return {
-        summary: {
-            totalBlocks: schedule.length,
-            violations,
-            underworked: under,
-            allConstraintsMet: violations.length === 0
-        },
-        schedule
-    };
+  // track assignment state
+  const schedule = [];
+  const violations = [];
+  const hoursWorked = {};
+  const lastWin = {}, lastRem = {};
+  users.forEach(u => hoursWorked[u._id] = 0);
+
+  for (let [dateStr, slices] of Object.entries(DAY_SLICES)) {
+    for (let [start,end] of slices) {
+      const dur = (toMinutes(end) - toMinutes(start)) / 60;
+      const shift = { date:new Date(dateStr), startTime:start, endTime:end };
+
+      // 1) WINDOW
+      let pool = findEligible(core, finals, shift, hoursWorked, dur, TARGET_HOURS);
+      if (pool.length < WINDOW_MIN)
+        pool = findEligible(floaters, finals, shift, hoursWorked, dur, MAX_HOURS);
+      const winCount = Math.min(WINDOW_MAX, WINDOW_MIN);
+      const win = pickWorkers(pool, hoursWorked, winCount, lastWin);
+      if (win.length < WINDOW_MIN)
+        violations.push(`Window undercovered ${dateStr} ${start}`);
+      schedule.push({
+        ...shift,
+        shiftType: 'Window',
+        assignedTo: win.map(u=>({ _id:u._id, name:u.name }))
+      });
+      win.forEach(u=>{
+        hoursWorked[u._id] += dur;
+        lastWin[u._id] = Date.now();
+      });
+
+      // 2) REMOTE
+      pool = findEligible(core, finals, shift, hoursWorked, dur, TARGET_HOURS);
+      if (pool.length < REMOTE_MIN)
+        pool = findEligible(floaters, finals, shift, hoursWorked, dur, MAX_HOURS);
+      const rem = pickWorkers(pool, hoursWorked, REMOTE_MIN, lastRem);
+      if (rem.length < REMOTE_MIN)
+        violations.push(`Remote undercovered ${dateStr} ${start}`);
+      schedule.push({
+        ...shift,
+        shiftType: 'Remote',
+        assignedTo: rem.map(u=>({ _id:u._id, name:u.name }))
+      });
+      rem.forEach(u=>{
+        hoursWorked[u._id] += dur;
+        lastRem[u._id] = Date.now();
+      });
+    }
+  }
+
+  // gently top‐off under-TARGET_HOURS core users
+  balanceHours(schedule, core, hoursWorked, finals);
+
+  // build summary
+  const underworked = core
+    .filter(u => hoursWorked[u._id] < TARGET_HOURS)
+    .map(u=>({ name:u.name, hours: hoursWorked[u._id].toFixed(1) }));
+
+  return {
+    summary: {
+      totalBlocks: schedule.length,
+      violations,
+      underworked,
+      allConstraintsMet: violations.length === 0
+    },
+    schedule
+  };
 }
 
 module.exports = autoAssignFinals;
