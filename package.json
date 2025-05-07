@@ -1,0 +1,13 @@
+{
+  "name": "finals-scheduler",
+  "version": "1.0.0",
+  "description": "IT Scheduler application",
+  "scripts": {
+    "start": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "backend": "npm --prefix backend/server run dev",
+    "frontend": "npm --prefix frontend start"
+  },
+  "devDependencies": {
+    "concurrently": "^7.0.0"
+  }
+}
