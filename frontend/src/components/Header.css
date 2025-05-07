@@ -1,0 +1,50 @@
+.header {
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 15px 0;
+  width: 100%;
+}
+
+.header-container {
+  display: flex;
+  align-items: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.logo-container {
+  margin-right: 20px;
+}
+
+.msoe-logo {
+  width: 100px;
+  height: auto;
+}
+
+.title-container {
+  flex-grow: 1;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin: 0;
+  color: #000;
+}
+
+@media (max-width: 768px) {
+  .header-container {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .logo-container {
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+  
+  .title {
+    font-size: 2rem;
+  }
+}
