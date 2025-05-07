@@ -84,3 +84,66 @@ export const deleteUser = async (userId) => {
   }
   throw new Error('User not found');
 };
+
+import axios from 'axios';
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+
+// Create axios instance with default config
+const api = axios.create({
+  baseURL: API_URL,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+
+// Add token to requests if it exists
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export const login = async (email) => {
+  try {
+    const response = await api.post('/auth/login', { email });
+    if (response.data.token) {
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+    }
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'An error occurred during login' };
+  }
+};
+
+export const logout = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+};
+
+export const getCurrentUser = () => {
+  const userStr = localStorage.getItem('user');
+  if (userStr) return JSON.parse(userStr);
+  return null;
+};
+
+export const submitAvailability = async (userId, availability) => {
+  try {
+    const response = await api.post('/availability', { userId, availability });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Failed to submit availability' };
+  }
+};
+
+export const getUsers = async () => {
+  try {
+    const response = await api.get('/users');
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Failed to fetch users' };
+  }
+};

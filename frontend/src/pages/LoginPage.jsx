@@ -1,34 +1,44 @@
 import React, { useState } from 'react';
-import { validateEmail } from '../utils/validation';
-import { checkUserRole } from '../services/api';
+import { useNavigate } from 'react-router-dom';
+import { login, logout } from '../services/api';
 import './LoginPage.css';
 
 function LoginPage({ onLogin }) {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
-    // Validate email format
-    if (!validateEmail(email)) {
-      setError('Please enter a valid MSOE email address');
-      return;
-    }
-    
     setIsLoading(true);
-    
+
     try {
-      // Check if user exists and get role
-      const role = await checkUserRole(email);
-      onLogin(email, role);
+      // Special case for admin
+      if (email.toLowerCase() === 'sudersanamv@msoe.edu') {
+        onLogin(email, 'admin');
+        return;
+      }
+
+      // Regular user login
+      const response = await login(email);
+      onLogin(email, response.user.role);
     } catch (err) {
-      setError('Invalid email or user not found');
+      setError(err.message || 'Invalid email or user not found');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleLogoClick = () => {
+    // Clear any existing authentication
+    logout();
+    // Reset form state
+    setEmail('');
+    setError('');
+    // Navigate to login page
+    navigate('/');
   };
 
   return (
@@ -38,17 +48,17 @@ function LoginPage({ onLogin }) {
       
       <div className="login-container">
         <div className="header">
-          <div className="logo-container">
+          <div className="logo-container" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
             <img 
-              src="/msoe-logo.png" 
+              src="/MSOE.png" 
               alt="MSOE University Logo" 
               className="msoe-logo" 
             />
           </div>
           <div className="title-container">
             <h1 className="title">MSOE IT Scheduler</h1>
-            <p className="welcome-text">Some dialogue to welcome the users !!</p>
-            <p className="welcome-subtext">Blah Blah Blah ...</p>
+            <p className="welcome-text">This tool helps streamline shift scheduling for the student manager. Whether you're entering your availability or generating the schedules, this platform will save you time.!!</p>
+            <p className="welcome-subtext">At a low cost of take Vamsi out for a meal</p>
           </div>
         </div>
         
@@ -65,11 +75,13 @@ function LoginPage({ onLogin }) {
           <div className="input-container">
             <input 
               type="email" 
-              placeholder="MSOE EMAIL ADDRESS" 
+              placeholder="MSOE Email Address" 
               className="email-input"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              pattern="[a-z0-9._%+-]+@msoe\.edu$"
+              title="Please enter a valid MSOE email address"
             />
           </div>
           
@@ -78,7 +90,7 @@ function LoginPage({ onLogin }) {
             className="login-button"
             disabled={isLoading}
           >
-            {isLoading ? 'LOGGING IN...' : 'LOGIN'}
+            {isLoading ? 'Logging in...' : 'Login'}
           </button>
           
           <div className="forgot-username">

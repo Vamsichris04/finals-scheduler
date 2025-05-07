@@ -6,7 +6,7 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import { fetchUsers, fetchUserBusyTimes, deleteUser, addUser } from '../services/api';
 import './AdminPage.css';
 
-function AdminPage() {
+function AdminPage({ onLogout }) {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState('');
   const [busyTimes, setBusyTimes] = useState({});
@@ -101,7 +101,7 @@ function AdminPage() {
 
   return (
     <div className="admin-page">
-      <Header />
+      <Header onLogout={onLogout} />
       
       <div className="admin-page-content">
         <div className="admin-header">

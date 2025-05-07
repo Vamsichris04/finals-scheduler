@@ -15,6 +15,11 @@
 .logo-container {
   display: flex;
   align-items: center;
+  transition: transform 0.2s ease-in-out;
+}
+
+.logo-container:hover {
+  transform: scale(1.05);
 }
 
 .msoe-logo {

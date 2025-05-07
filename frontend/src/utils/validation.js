@@ -9,4 +9,5 @@ export const validateEmail = (email) => {
   
   // Check if it's an MSOE email (ends with msoe.edu)
   return email.toLowerCase().endsWith('msoe.edu');
+  
 };

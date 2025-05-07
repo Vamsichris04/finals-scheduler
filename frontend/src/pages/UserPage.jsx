@@ -5,7 +5,7 @@ import Calendar from '../components/Calendar';
 import { fetchUsers, fetchUserBusyTimes, saveBusyTimes } from '../services/api';
 import './UserPage.css';
 
-function UserPage({ userEmail }) {
+function UserPage({ userEmail, onLogout }) {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState('');
   const [busyTimes, setBusyTimes] = useState({});
@@ -70,9 +70,15 @@ function UserPage({ userEmail }) {
     }
   };
 
+  // Get the selected user's name
+  const getSelectedUserName = () => {
+    const user = users.find(u => u._id === selectedUser);
+    return user ? user.name : '';
+  };
+
   return (
     <div className="user-page">
-      <Header />
+      <Header onLogout={onLogout} />
       
       <div className="user-page-content">
         <div className="welcome-message"><h2>Welcome to the MSOE IT Scheduler</h2>
@@ -102,6 +108,7 @@ function UserPage({ userEmail }) {
                 <Calendar 
                   busyTimes={busyTimes}
                   onUpdateBusyTimes={handleUpdateBusyTimes}
+                  userName={getSelectedUserName()}
                 />
               ) : (
                 <div className="no-selection">
