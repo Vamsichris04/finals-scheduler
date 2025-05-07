@@ -1,5 +1,6 @@
 import React from 'react';
 import './Header.css';
+import msoeLogo from '../assets/MSOE.png';
 
 function Header() {
   return (
@@ -7,7 +8,7 @@ function Header() {
       <div className="header-container">
         <div className="logo-container">
           <img 
-            src="/msoe-logo.png" 
+            src={msoeLogo} 
             alt="MSOE University Logo" 
             className="msoe-logo" 
           />
