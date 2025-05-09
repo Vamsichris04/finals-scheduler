@@ -14,12 +14,16 @@ function Header({ onLogout }) {
   };
 
   return (
-    <header className="header">
-      <div className="logo-container" onClick={handleLogoClick}>
-        <img src={msoeLogo} alt="MSOE Logo" className="logo" />
-        <h1 className="header-title">MSOE IT Scheduler</h1>
+    <>
+      <header className="header">
+        <div className="logo-container" onClick={handleLogoClick}>
+          <img src={msoeLogo} alt="MSOE Logo" className="logo" />
+        </div>
+      </header>
+      <div className="text-bubble">
+        <h1>MSOE IT Scheduler</h1>
       </div>
-    </header>
+    </>
   );
 }
 
