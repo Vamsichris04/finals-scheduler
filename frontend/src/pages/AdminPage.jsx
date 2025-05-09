@@ -245,16 +245,6 @@ function AdminPage({ onLogout }) {
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="updateUserEmail">Email:</label>
-                <input
-                  type="email"
-                  id="updateUserEmail"
-                  value={updateFormData.email}
-                  onChange={(e) => setUpdateFormData({...updateFormData, email: e.target.value})}
-                  required
-                />
-              </div>
-              <div className="form-group">
                 <label htmlFor="updateUserRole">Role:</label>
                 <select
                   value={updateFormData.role}
@@ -339,6 +329,7 @@ function AdminPage({ onLogout }) {
                     busyTimes={busyTimes}
                     onUpdateBusyTimes={() => {}}
                     readOnly={true}
+                    userName={selectedUser ? selectedUser.name : ''}
                   />
                 </>
               ) : (
