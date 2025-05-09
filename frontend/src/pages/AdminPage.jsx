@@ -147,6 +147,7 @@ function AdminPage({ onLogout }) {
 
   const handleUpdateCancel = () => {
     setShowUpdateForm(false);
+    if (!selectedUser) return;
     setUpdateFormData({
       name: selectedUser.name,
       email: selectedUser.email,
