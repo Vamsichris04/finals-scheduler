@@ -203,3 +203,53 @@
     font-size: 1rem;
   }
 }
+
+.login-content-flex {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  gap: 40px;
+}
+
+.login-info-box {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 2.5rem 2rem;
+  max-width: 350px;
+  min-width: 260px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.login-info-box .title {
+  color: #c8102e;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.login-info-box .welcome-text,
+.login-info-box .welcome-subtext {
+  color: #333;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 900px) {
+  .login-content-flex {
+    flex-direction: column;
+    gap: 20px;
+  }
+  .login-info-box {
+    max-width: 100%;
+    min-width: 0;
+    width: 100%;
+    align-items: center;
+    text-align: center;
+  }
+}

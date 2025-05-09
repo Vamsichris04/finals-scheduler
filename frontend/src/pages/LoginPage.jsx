@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login, logout } from '../services/api';
+import Header from '../components/Header';
+import { logout } from '../services/api';
 import './LoginPage.css';
 
 async function validateUserEmail(email) {
@@ -33,7 +34,7 @@ function LoginPage({ onLogin }) {
       }
 
       // Regular user login
-      const response = await login(email);
+      const response = await validateUserEmail(email);
       if (response.user.role === 'admin') {
         navigate('/admin');
       } else {
@@ -48,75 +49,59 @@ function LoginPage({ onLogin }) {
   };
 
   const handleLogoClick = () => {
-    // Clear any existing authentication
     logout();
-    // Reset form state
     setEmail('');
     setError('');
-    // Navigate to login page
     navigate('/');
   };
 
   return (
     <div className="login-page">
+      <Header />
       <div className="top-right-shape"></div>
       <div className="bottom-left-shape"></div>
-      
-      <div className="login-container">
-        <div className="header">
-          <div className="logo-container" onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
-            <img 
-              src="/MSOE.png" 
-              alt="MSOE University Logo" 
-              className="msoe-logo" 
-            />
-          </div>
-          <div className="title-container">
-            <h1 className="title">MSOE IT Scheduler</h1>
-            <p className="welcome-text">This tool helps streamline shift scheduling for the student manager. Whether you're entering your availability or generating the schedules, this platform will save you time.!!</p>
-            <p className="welcome-subtext">At a low cost of take Vamsi out for a meal</p>
-          </div>
+      <div className="login-content-flex">
+        <div className="login-info-box">
+          <h1 className="title">MSOE IT Scheduler</h1>
+          <p className="welcome-text">This tool helps streamline shift scheduling for the student manager. Whether you're entering your availability or generating the schedules, this platform will save you time.!!</p>
+          <p className="welcome-subtext">At a low cost of take Vamsi out for a meal</p>
         </div>
-        
-        <form className="login-form" onSubmit={handleSubmit}>
-          <div className="user-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2a5 5 0 0 1 5 5c0 2.76-2.24 5-5 5S7 9.76 7 7a5 5 0 0 1 5-5z"></path>
-              <path d="M12 12c-5.52 0-10 4.48-10 10h20c0-5.52-4.48-10-10-10z"></path>
-            </svg>
-          </div>
-          
-          {error && <div className="error-message">{error}</div>}
-          
-          <div className="input-container">
-            <input 
-              type="email" 
-              placeholder="MSOE Email Address" 
-              className="email-input"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              pattern="[a-z0-9._%+-]+@msoe\.edu$"
-              title="Please enter a valid MSOE email address"
-            />
-          </div>
-          
-          <button 
-            type="submit" 
-            className="login-button"
-            disabled={isLoading}
-          >
-            {isLoading ? 'Logging in...' : 'Login'}
-          </button>
-          
-          <div className="forgot-username">
-            <a href="#" className="forgot-link">Forgot Username?</a>
-          </div>
-          
-          <div className="not-implemented">
-            ...Too bad I dont have that implemented yet :(
-          </div>
-        </form>
+        <div className="login-container">
+          <form className="login-form" onSubmit={handleSubmit}>
+            <div className="user-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2a5 5 0 0 1 5 5c0 2.76-2.24 5-5 5S7 9.76 7 7a5 5 0 0 1 5-5z"></path>
+                <path d="M12 12c-5.52 0-10 4.48-10 10h20c0-5.52-4.48-10-10-10z"></path>
+              </svg>
+            </div>
+            {error && <div className="error-message">{error}</div>}
+            <div className="input-container">
+              <input 
+                type="email" 
+                placeholder="MSOE Email Address" 
+                className="email-input"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                pattern="[a-z0-9._%+-]+@msoe\.edu$"
+                title="Please enter a valid MSOE email address"
+              />
+            </div>
+            <button 
+              type="submit" 
+              className="login-button"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Logging in...' : 'Login'}
+            </button>
+            <div className="forgot-username">
+              <a href="#" className="forgot-link">Forgot Username?</a>
+            </div>
+            <div className="not-implemented">
+              ...Too bad I dont have that implemented yet :(
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
