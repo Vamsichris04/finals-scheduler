@@ -16,6 +16,9 @@ function AdminPage({ onLogout }) {
   const [newUserName, setNewUserName] = useState('');
   const [newUserEmail, setNewUserEmail] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showUpdateUserForm, setShowUpdateUserForm] = useState(false);
+  const [updateUserName, setUpdateUserName] = useState('');
+  const [updateUserEmail, setUpdateUserEmail] = useState('');
   const selectedUserObj = users.find(user => (user._id || user.id) === selectedUser);
 
   useEffect(() => {
@@ -94,6 +97,34 @@ function AdminPage({ onLogout }) {
     }
   };
 
+  const handleOpenUpdateUserForm = () => {
+    if (selectedUserObj) {
+      setUpdateUserName(selectedUserObj.name);
+      setUpdateUserEmail(selectedUserObj.email);
+      setShowUpdateUserForm(true);
+    }
+  };
+
+  const handleUpdateUser = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    try {
+      // For mock: update in users array directly
+      const updatedUsers = users.map(user =>
+        (user._id || user.id) === selectedUser
+          ? { ...user, name: updateUserName, email: updateUserEmail }
+          : user
+      );
+      setUsers(updatedUsers);
+      setMessage('User updated successfully!');
+      setShowUpdateUserForm(false);
+    } catch (error) {
+      setMessage('Failed to update user. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const clearMessage = () => {
     setTimeout(() => {
       setMessage('');
@@ -132,6 +163,15 @@ function AdminPage({ onLogout }) {
               Delete Selected User
             </button>
           )}
+          
+          <button
+            className="btn btn-secondary"
+            onClick={handleOpenUpdateUserForm}
+            disabled={!selectedUser}
+            style={{ marginLeft: 10 }}
+          >
+            Update User
+          </button>
         </div>
         
         {showAddUserForm && (
@@ -167,6 +207,51 @@ function AdminPage({ onLogout }) {
                   disabled={isLoading}
                 >
                   {isLoading ? 'Adding...' : 'Add User'}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+        
+        {showUpdateUserForm && (
+          <div className="update-user-form">
+            <h3>Update User</h3>
+            <form onSubmit={handleUpdateUser}>
+              <div className="form-group">
+                <label htmlFor="updateUserName">Name:</label>
+                <input
+                  type="text"
+                  id="updateUserName"
+                  value={updateUserName}
+                  onChange={e => setUpdateUserName(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="updateUserEmail">Email:</label>
+                <input
+                  type="email"
+                  id="updateUserEmail"
+                  value={updateUserEmail}
+                  onChange={e => setUpdateUserEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-actions">
+                <button
+                  type="submit"
+                  className="btn btn-success"
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Updating...' : 'Update User'}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setShowUpdateUserForm(false)}
+                  style={{ marginLeft: 10 }}
+                >
+                  Cancel
                 </button>
               </div>
             </form>
