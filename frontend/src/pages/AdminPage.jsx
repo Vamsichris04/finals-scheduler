@@ -13,8 +13,16 @@ function AdminPage({ onLogout }) {
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [showAddUserForm, setShowAddUserForm] = useState(false);
-  const [newUserName, setNewUserName] = useState('');
-  const [newUserEmail, setNewUserEmail] = useState('');
+  const [newUserData, setNewUserData] = useState({
+    name: '',
+    userId: '',
+    email: '',
+    role: 'user',
+    position: 'Tier 1',
+    isCommuter: false,
+    isActive: true,
+    desiredHours: 12,
+  });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showUpdateForm, setShowUpdateForm] = useState(false);
   const [updateFormData, setUpdateFormData] = useState({
@@ -82,16 +90,22 @@ function AdminPage({ onLogout }) {
   const handleAddUser = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    
     try {
-      await addUser({ name: newUserName, email: newUserEmail });
+      await addUser(newUserData);
       setMessage('User added successfully!');
-      setNewUserName('');
-      setNewUserEmail('');
+      setNewUserData({
+        name: '',
+        userId: '',
+        email: '',
+        role: 'user',
+        position: 'Tier 1',
+        isCommuter: false,
+        isActive: true,
+        desiredHours: 12,
+      });
       setShowAddUserForm(false);
       await loadUsers();
     } catch (error) {
-      console.error('Error adding user:', error);
       setMessage('Failed to add user. Please try again.');
     } finally {
       setIsLoading(false);
@@ -196,33 +210,51 @@ function AdminPage({ onLogout }) {
             <h3>Add New User</h3>
             <form onSubmit={handleAddUser}>
               <div className="form-group">
-                <label htmlFor="userName">Name:</label>
-                <input 
-                  type="text" 
-                  id="userName"
-                  value={newUserName}
-                  onChange={(e) => setNewUserName(e.target.value)}
-                  required
-                />
+                <label>Name:</label>
+                <input type="text" value={newUserData.name} onChange={e => setNewUserData({...newUserData, name: e.target.value})} required />
               </div>
-              
               <div className="form-group">
-                <label htmlFor="userEmail">Email:</label>
-                <input 
-                  type="email" 
-                  id="userEmail"
-                  value={newUserEmail}
-                  onChange={(e) => setNewUserEmail(e.target.value)}
-                  required
-                />
+                <label>User ID:</label>
+                <input type="number" value={newUserData.userId} onChange={e => setNewUserData({...newUserData, userId: e.target.value})} required />
               </div>
-              
+              <div className="form-group">
+                <label>Email:</label>
+                <input type="email" value={newUserData.email} onChange={e => setNewUserData({...newUserData, email: e.target.value})} required />
+              </div>
+              <div className="form-group">
+                <label>Role:</label>
+                <select value={newUserData.role} onChange={e => setNewUserData({...newUserData, role: e.target.value})}>
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>Position:</label>
+                <select value={newUserData.position} onChange={e => setNewUserData({...newUserData, position: e.target.value})}>
+                  <option value="Tier 1">Tier 1</option>
+                  <option value="Tier 2">Tier 2</option>
+                  <option value="Tier 3">Tier 3</option>
+                  <option value="Tier 4">Tier 4</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label>
+                  <input type="checkbox" checked={newUserData.isCommuter} onChange={e => setNewUserData({...newUserData, isCommuter: e.target.checked})} />
+                  Is Commuter
+                </label>
+              </div>
+              <div className="form-group">
+                <label>
+                  <input type="checkbox" checked={newUserData.isActive} onChange={e => setNewUserData({...newUserData, isActive: e.target.checked})} />
+                  Is Active
+                </label>
+              </div>
+              <div className="form-group">
+                <label>Desired Hours:</label>
+                <input type="number" min="10" max="20" value={newUserData.desiredHours} onChange={e => setNewUserData({...newUserData, desiredHours: e.target.value})} required />
+              </div>
               <div className="form-actions">
-                <button 
-                  type="submit" 
-                  className="btn btn-success"
-                  disabled={isLoading}
-                >
+                <button type="submit" className="btn btn-success" disabled={isLoading}>
                   {isLoading ? 'Adding...' : 'Add User'}
                 </button>
               </div>

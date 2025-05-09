@@ -72,15 +72,13 @@ export const saveBusyTimes = async (userId, busyTimes) => {
 };
 
 export const addUser = async (userData) => {
-  await delay(800);
-  const newUser = {
-    id: String(mockUsers.length + 1),
-    name: userData.name,
-    email: userData.email,
-    role: 'user'
-  };
-  mockUsers.push(newUser);
-  return newUser;
+  const response = await fetch('/api/users', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(userData),
+  });
+  if (!response.ok) throw new Error('Failed to add user');
+  return response.json();
 };
 
 export const deleteUser = async (userId) => {
