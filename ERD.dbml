@@ -1,0 +1,28 @@
+Table User {
+  _id ObjectId [pk]
+  name varchar
+  userId int [unique]
+  email varchar [unique]
+  role varchar
+  position varchar
+  isCommuter boolean
+  isActive boolean
+  desiredHours int
+}
+
+Table Shift {
+  _id ObjectId [pk]
+  user ObjectId [ref: > User._id]
+  date date
+  startTime varchar
+  endTime varchar
+  position varchar
+  notes varchar
+}
+
+Table Final {
+  _id ObjectId [pk]
+  user ObjectId [ref: > User._id]
+  date date
+  details varchar
+} 
