@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import UserDropdown from '../components/UserDropdown';
 import Calendar from '../components/Calendar';
+import UserList from '../components/UserList';
 import { fetchUsers, fetchUserBusyTimes, saveBusyTimes } from '../services/api';
 import './UserPage.css';
 
@@ -101,6 +102,7 @@ function UserPage({ userEmail, onLogout }) {
                 selectedUser={selectedUser}
                 onSelectUser={handleSelectUser}
               />
+              <UserList users={users} />
             </div>
             
             <div className="main-content">
