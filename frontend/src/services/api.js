@@ -82,14 +82,11 @@ export const addUser = async (userData) => {
 };
 
 export const deleteUser = async (userId) => {
-  await delay(800);
-  const index = mockUsers.findIndex(u => u.id === userId);
-  if (index !== -1) {
-    mockUsers.splice(index, 1);
-    delete mockBusyTimes[userId];
-    return true;
-  }
-  throw new Error('User not found');
+  const response = await fetch(`/api/users/${userId}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) throw new Error('Failed to delete user');
+  return response.json();
 };
 
 export const updateUser = async (userId, userData) => {
