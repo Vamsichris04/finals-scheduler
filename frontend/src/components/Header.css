@@ -35,55 +35,27 @@
   height: 100px;
   width: 100px;
   object-fit: contain;
+  
 }
 
 /* Animated text bubble styles */
 .text-bubble {
-  position: fixed;
-  top: 120px;
-  left: 2rem;
-  background-color: #c8102e;
-  color: white;
-  padding: 1rem 1.5rem;
-  border-radius: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  animation: slideIn 0.5s ease-out;
-  z-index: 999;
+  display: none;
 }
 
-.text-bubble::before {
-  content: '';
-  position: absolute;
-  top: -10px;
-  left: 20px;
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-  border-bottom: 10px solid #c8102e;
-}
-
-.text-bubble h1 {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateY(-20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+.header-title-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .header-title {
-  color: white;
+  color: #000000;
   margin: 0;
-  font-size: 1.8rem;
-  font-weight: 600;
-  margin-left: 1rem;
+  font-size: 2.2rem;
+  font-weight: 700;
+  letter-spacing: 1px;
 }
 
 .title-container {
