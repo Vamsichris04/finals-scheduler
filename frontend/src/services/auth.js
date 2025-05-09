@@ -5,8 +5,14 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
 
 export const validateUserEmail = async (email) => {
   try {
-    const response = await axios.post(`${API_URL}/users/validate`, { email });
-    return response.data;
+    const cleanedEmail = email.trim().toLowerCase();
+    const response = await fetch('/api/users/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: cleanedEmail }),
+    });
+    if (!response.ok) throw new Error('Invalid email or user not found');
+    return response.json();
   } catch (error) {
     if (error.response) {
       throw new Error(error.response.data.message || 'User not found');

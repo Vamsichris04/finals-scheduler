@@ -1,18 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
-import { logout } from '../services/api';
+import { validateUserEmail, logout } from '../services/auth';
 import './LoginPage.css';
-
-async function validateUserEmail(email) {
-  const response = await fetch('/api/users/validate', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email }),
-  });
-  if (!response.ok) throw new Error('Invalid email or user not found');
-  return response.json();
-}
 
 function LoginPage({ onLogin }) {
   const [email, setEmail] = useState('');
