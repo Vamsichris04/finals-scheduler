@@ -113,7 +113,7 @@ function UserPage({ userEmail, onLogout }) {
                 />
               ) : (
                 <div className="no-selection">
-                  <p>Please select a user from the list to view and update their schedule.</p>
+                  <p>Please select your name from the dropdown to view and update your schedule.</p>
                 </div>
               )}
             </div>

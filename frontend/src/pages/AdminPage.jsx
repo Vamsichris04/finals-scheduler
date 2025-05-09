@@ -334,7 +334,7 @@ function AdminPage({ onLogout }) {
                 </>
               ) : (
                 <div className="no-selection">
-                  <p>Please select a user from the list to view their schedule.</p>
+                  <p>Please select a student worker from the list to view their schedule.</p>
                 </div>
               )}
             </div>
