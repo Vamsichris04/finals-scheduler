@@ -3,12 +3,12 @@ import Header from '../components/Header';
 import UserDropdown from '../components/UserDropdown';
 import Calendar from '../components/Calendar';
 import ConfirmationModal from '../components/ConfirmationModal';
-import { fetchUsers, fetchUserBusyTimes, deleteUser, addUser } from '../services/api';
+import { fetchUsers, fetchUserBusyTimes, deleteUser, addUser, updateUser } from '../services/api';
 import './AdminPage.css';
 
 function AdminPage({ onLogout }) {
   const [users, setUsers] = useState([]);
-  const [selectedUser, setSelectedUser] = useState('');
+  const [selectedUser, setSelectedUser] = useState(null);
   const [busyTimes, setBusyTimes] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState('');
@@ -16,10 +16,15 @@ function AdminPage({ onLogout }) {
   const [newUserName, setNewUserName] = useState('');
   const [newUserEmail, setNewUserEmail] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showUpdateUserForm, setShowUpdateUserForm] = useState(false);
-  const [updateUserName, setUpdateUserName] = useState('');
-  const [updateUserEmail, setUpdateUserEmail] = useState('');
-  const selectedUserObj = users.find(user => (user._id || user.id) === selectedUser);
+  const [showUpdateForm, setShowUpdateForm] = useState(false);
+  const [updateFormData, setUpdateFormData] = useState({
+    name: '',
+    email: '',
+    role: '',
+    position: '',
+    isCommuter: false,
+    isActive: true
+  });
 
   useEffect(() => {
     loadUsers();
@@ -47,7 +52,7 @@ function AdminPage({ onLogout }) {
   const loadUserBusyTimes = async () => {
     setIsLoading(true);
     try {
-      const times = await fetchUserBusyTimes(selectedUser);
+      const times = await fetchUserBusyTimes(selectedUser._id);
       setBusyTimes(times);
     } catch (error) {
       console.error('Error loading busy times:', error);
@@ -58,7 +63,20 @@ function AdminPage({ onLogout }) {
   };
 
   const handleSelectUser = (userId) => {
-    setSelectedUser(userId);
+    const user = users.find(u => u._id === userId);
+    if (!user) {
+      setSelectedUser(null);
+      return;
+    }
+    setSelectedUser(user);
+    setUpdateFormData({
+      name: user.name || '',
+      email: user.email || '',
+      role: user.role || '',
+      position: user.position || '',
+      isCommuter: user.isCommuter || false,
+      isActive: user.isActive !== undefined ? user.isActive : true
+    });
   };
 
   const handleAddUser = async (e) => {
@@ -81,48 +99,48 @@ function AdminPage({ onLogout }) {
   };
 
   const handleDeleteUser = async () => {
-    setIsLoading(true);
-    try {
-      await deleteUser(selectedUser);
-      setMessage('User deleted successfully!');
-      setSelectedUser('');
-      setBusyTimes({});
-      setShowDeleteModal(false);
-      await loadUsers();
-    } catch (error) {
-      console.error('Error deleting user:', error);
-      setMessage('Failed to delete user. Please try again.');
-    } finally {
-      setIsLoading(false);
+    if (!selectedUser) return;
+    
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      try {
+        await deleteUser(selectedUser._id);
+        setMessage('User deleted successfully');
+        setSelectedUser(null);
+        setBusyTimes({});
+        setShowDeleteModal(false);
+        await loadUsers();
+      } catch (error) {
+        setMessage('Failed to delete user');
+      }
     }
   };
 
-  const handleOpenUpdateUserForm = () => {
-    if (selectedUserObj) {
-      setUpdateUserName(selectedUserObj.name);
-      setUpdateUserEmail(selectedUserObj.email);
-      setShowUpdateUserForm(true);
-    }
+  const handleUpdateClick = () => {
+    setShowUpdateForm(true);
   };
 
-  const handleUpdateUser = async (e) => {
+  const handleUpdateSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
     try {
-      // For mock: update in users array directly
-      const updatedUsers = users.map(user =>
-        (user._id || user.id) === selectedUser
-          ? { ...user, name: updateUserName, email: updateUserEmail }
-          : user
-      );
-      setUsers(updatedUsers);
-      setMessage('User updated successfully!');
-      setShowUpdateUserForm(false);
+      await updateUser(selectedUser._id, updateFormData);
+      setMessage('User updated successfully');
+      setShowUpdateForm(false);
+      loadUsers();
     } catch (error) {
-      setMessage('Failed to update user. Please try again.');
-    } finally {
-      setIsLoading(false);
+      setMessage('Failed to update user');
     }
+  };
+
+  const handleUpdateCancel = () => {
+    setShowUpdateForm(false);
+    setUpdateFormData({
+      name: selectedUser.name,
+      email: selectedUser.email,
+      role: selectedUser.role,
+      position: selectedUser.position,
+      isCommuter: selectedUser.isCommuter,
+      isActive: selectedUser.isActive
+    });
   };
 
   const clearMessage = () => {
@@ -166,7 +184,7 @@ function AdminPage({ onLogout }) {
           
           <button
             className="btn btn-primary"
-            onClick={handleOpenUpdateUserForm}
+            onClick={handleUpdateClick}
             disabled={!selectedUser}
           >
             Update User
@@ -212,17 +230,17 @@ function AdminPage({ onLogout }) {
           </div>
         )}
         
-        {showUpdateUserForm && (
+        {showUpdateForm ? (
           <div className="update-user-form">
             <h3>Update User</h3>
-            <form onSubmit={handleUpdateUser}>
+            <form onSubmit={handleUpdateSubmit}>
               <div className="form-group">
                 <label htmlFor="updateUserName">Name:</label>
                 <input
                   type="text"
                   id="updateUserName"
-                  value={updateUserName}
-                  onChange={e => setUpdateUserName(e.target.value)}
+                  value={updateFormData.name}
+                  onChange={(e) => setUpdateFormData({...updateFormData, name: e.target.value})}
                   required
                 />
               </div>
@@ -231,9 +249,51 @@ function AdminPage({ onLogout }) {
                 <input
                   type="email"
                   id="updateUserEmail"
-                  value={updateUserEmail}
-                  onChange={e => setUpdateUserEmail(e.target.value)}
+                  value={updateFormData.email}
+                  onChange={(e) => setUpdateFormData({...updateFormData, email: e.target.value})}
                   required
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="updateUserRole">Role:</label>
+                <select
+                  value={updateFormData.role}
+                  onChange={(e) => setUpdateFormData({...updateFormData, role: e.target.value})}
+                  required
+                >
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label htmlFor="updateUserPosition">Position:</label>
+                <select
+                  value={updateFormData.position}
+                  onChange={(e) => setUpdateFormData({...updateFormData, position: e.target.value})}
+                  required
+                >
+                  <option value="Tier 1">Tier 1</option>
+                  <option value="Tier 2">Tier 2</option>
+                  <option value="Tier 3">Tier 3</option>
+                  <option value="Tier 4">Tier 4</option>
+                </select>
+              </div>
+              <div className="form-group">
+                <label htmlFor="updateUserIsCommuter">Is Commuter:</label>
+                <input
+                  type="checkbox"
+                  id="updateUserIsCommuter"
+                  checked={updateFormData.isCommuter}
+                  onChange={(e) => setUpdateFormData({...updateFormData, isCommuter: e.target.checked})}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="updateUserIsActive">Is Active:</label>
+                <input
+                  type="checkbox"
+                  id="updateUserIsActive"
+                  checked={updateFormData.isActive}
+                  onChange={(e) => setUpdateFormData({...updateFormData, isActive: e.target.checked})}
                 />
               </div>
               <div className="form-actions">
@@ -247,7 +307,7 @@ function AdminPage({ onLogout }) {
                 <button
                   type="button"
                   className="btn btn-secondary"
-                  onClick={() => setShowUpdateUserForm(false)}
+                  onClick={handleUpdateCancel}
                   style={{ marginLeft: 10 }}
                 >
                   Cancel
@@ -255,16 +315,12 @@ function AdminPage({ onLogout }) {
               </div>
             </form>
           </div>
-        )}
-        
-        {isLoading && !showAddUserForm ? (
-          <div className="loading">Loading...</div>
         ) : (
           <div className="admin-page-layout">
             <div className="sidebar">
               <UserDropdown 
                 users={users}
-                selectedUser={selectedUser}
+                selectedUser={selectedUser?._id}
                 onSelectUser={handleSelectUser}
               />
             </div>
@@ -275,7 +331,6 @@ function AdminPage({ onLogout }) {
                   <h2>
                     Weekly Calendar Worksheet
                     <span style={{ fontWeight: 'normal', fontSize: '1rem', marginLeft: 12 }}>
-                      {selectedUserObj ? `for ${selectedUserObj.name}` : ''}
                     </span>
                   </h2>
                   <p style={{ color: '#666', marginBottom: 16 }}>

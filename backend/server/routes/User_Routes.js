@@ -36,8 +36,8 @@ router.post('/', async (req, res) => {
 // @access  Public
 router.get('/', async (req, res) => {
   try {
-    // Only return name and position (or role) fields
-    const users = await User.find({}, 'name position role');
+    // Return all necessary fields for the frontend
+    const users = await User.find({}, 'name email role position isCommuter isActive');
     res.json(users);
   } catch (err) {
     console.error('Error fetching users:', err.message);
@@ -80,6 +80,43 @@ router.post('/validate', async (req, res) => {
       position: user.position
     }
   });
+});
+
+// @route   PUT /api/users/:id
+// @desc    Update a user
+// @access  Public
+router.put('/:id', async (req, res) => {
+  try {
+    const { name, email, role, position, isCommuter, isActive } = req.body;
+    const userId = req.params.id;
+
+    // Find and update the user
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { name, email, role, position, isCommuter, isActive },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({ 
+      message: "User updated successfully", 
+      user: {
+        id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        position: updatedUser.position,
+        isCommuter: updatedUser.isCommuter,
+        isActive: updatedUser.isActive
+      }
+    });
+  } catch (err) {
+    console.error('Error updating user:', err.message);
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
 module.exports = router;

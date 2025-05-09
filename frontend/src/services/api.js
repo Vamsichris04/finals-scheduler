@@ -94,6 +94,14 @@ export const deleteUser = async (userId) => {
   throw new Error('User not found');
 };
 
+export const updateUser = async (userId, userData) => {
+  try {
+    const response = await api.put(`/users/${userId}`, userData);
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || { message: 'Failed to update user' };
+  }
+};
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 

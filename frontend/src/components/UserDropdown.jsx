@@ -5,7 +5,7 @@ function UserDropdown({ users, selectedUser, onSelectUser }) {
   return (
     <div className="user-dropdown-container">
       <div className="dropdown-header">
-        <span> Select student workeres name:</span>
+        <span> Select student workers name:</span>
       </div>
       <div className="dropdown-select">
         <select 
@@ -15,7 +15,7 @@ function UserDropdown({ users, selectedUser, onSelectUser }) {
         >
           <option value="" disabled>Select a user</option>
           {users.map(user => (
-            <option key={user.id} value={user.id}>
+            <option key={user.id} value={user._id}>
               {user.name}
             </option>
           ))}
