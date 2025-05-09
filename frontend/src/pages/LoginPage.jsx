@@ -62,9 +62,9 @@ function LoginPage({ onLogin }) {
       <div className="bottom-left-shape"></div>
       <div className="login-content-flex">
         <div className="login-info-box">
-          <h1 className="title">MSOE IT Scheduler</h1>
-          <p className="welcome-text">This tool helps streamline shift scheduling for the student manager. Whether you're entering your availability or generating the schedules, this platform will save you time.!!</p>
-          <p className="welcome-subtext">At a low cost of take Vamsi out for a meal</p>
+          <h1 className="title">Hello there!</h1>
+          <p className="welcome-text">This tool will help streamline shift scheduling for the student manager. Whether you're entering your availability or generating the schedules, this platform will save you loads of time!</p>
+          <p className="welcome-subtext">*At a low cost of take Vamsi out for Dave's</p>
         </div>
         <div className="login-container">
           <form className="login-form" onSubmit={handleSubmit}>
