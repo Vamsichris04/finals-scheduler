@@ -63,8 +63,7 @@ function Calendar({ busyTimes, onUpdateBusyTimes, userName }) {
 
   return (
     <div className="calendar-container">
-      <h2 className="calendar-title">Weekly Calendar Worksheet</h2>
-      <div className="calendar-subtitle">Weekly Calendar of {userName || 'User'}</div>
+      <div className="calendar-subtitle"> Student worker name: {userName || 'User'}</div>
       
       <div className="calendar-grid">
         <div className="calendar-header">

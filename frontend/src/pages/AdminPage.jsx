@@ -165,10 +165,9 @@ function AdminPage({ onLogout }) {
           )}
           
           <button
-            className="btn btn-secondary"
+            className="btn btn-primary"
             onClick={handleOpenUpdateUserForm}
             disabled={!selectedUser}
-            style={{ marginLeft: 10 }}
           >
             Update User
           </button>
@@ -280,7 +279,6 @@ function AdminPage({ onLogout }) {
                     </span>
                   </h2>
                   <p style={{ color: '#666', marginBottom: 16 }}>
-                    Weekly Calendar of {selectedUserObj ? selectedUserObj.name : 'User'}
                   </p>
                   <Calendar 
                     busyTimes={busyTimes}
