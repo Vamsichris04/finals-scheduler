@@ -7,6 +7,7 @@
   padding: 2rem;
   max-width: 1400px;
   margin: 0 auto;
+  padding-top: 100px;
 }
 
 .welcome-message {
@@ -50,6 +51,8 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  overflow-y: auto;
+  max-height: calc(100vh - 50px);
 }
 
 .main-content {
