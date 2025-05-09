@@ -102,7 +102,6 @@ function UserPage({ userEmail, onLogout }) {
                 selectedUser={selectedUser}
                 onSelectUser={handleSelectUser}
               />
-              <UserList users={users} />
             </div>
             
             <div className="main-content">

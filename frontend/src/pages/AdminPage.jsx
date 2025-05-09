@@ -16,6 +16,7 @@ function AdminPage({ onLogout }) {
   const [newUserName, setNewUserName] = useState('');
   const [newUserEmail, setNewUserEmail] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const selectedUserObj = users.find(user => (user._id || user.id) === selectedUser);
 
   useEffect(() => {
     loadUsers();
@@ -186,11 +187,22 @@ function AdminPage({ onLogout }) {
             
             <div className="main-content">
               {selectedUser ? (
-                <Calendar 
-                  busyTimes={busyTimes}
-                  onUpdateBusyTimes={() => {}}
-                  readOnly={true}
-                />
+                <>
+                  <h2>
+                    Weekly Calendar Worksheet
+                    <span style={{ fontWeight: 'normal', fontSize: '1rem', marginLeft: 12 }}>
+                      {selectedUserObj ? `for ${selectedUserObj.name}` : ''}
+                    </span>
+                  </h2>
+                  <p style={{ color: '#666', marginBottom: 16 }}>
+                    Weekly Calendar of {selectedUserObj ? selectedUserObj.name : 'User'}
+                  </p>
+                  <Calendar 
+                    busyTimes={busyTimes}
+                    onUpdateBusyTimes={() => {}}
+                    readOnly={true}
+                  />
+                </>
               ) : (
                 <div className="no-selection">
                   <p>Please select a user from the list to view their schedule.</p>

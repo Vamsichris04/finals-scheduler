@@ -1,5 +1,6 @@
 // Mock API service for demonstration purposes
 // In a real application, this would make actual API calls to a backend server
+import axios from 'axios';
 
 // Mock data
 const mockUsers = [
@@ -47,8 +48,9 @@ export const checkUserRole = async (email) => {
 };
 
 export const fetchUsers = async () => {
-  await delay(800);
-  return [...mockUsers];
+  const response = await fetch('http://localhost:5000/api/users');
+  if (!response.ok) throw new Error('Failed to fetch users');
+  return response.json();
 };
 
 export const fetchUserBusyTimes = async (userId) => {
@@ -85,9 +87,8 @@ export const deleteUser = async (userId) => {
   throw new Error('User not found');
 };
 
-import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
 
 // Create axios instance with default config
 const api = axios.create({
