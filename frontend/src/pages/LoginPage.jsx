@@ -3,6 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { login, logout } from '../services/api';
 import './LoginPage.css';
 
+async function validateUserEmail(email) {
+  const response = await fetch('/api/users/validate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  if (!response.ok) throw new Error('Invalid email or user not found');
+  return response.json();
+}
+
 function LoginPage({ onLogin }) {
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
@@ -18,11 +28,17 @@ function LoginPage({ onLogin }) {
       // Special case for admin
       if (email.toLowerCase() === 'sudersanamv@msoe.edu') {
         onLogin(email, 'admin');
+        navigate('/admin');
         return;
       }
 
       // Regular user login
       const response = await login(email);
+      if (response.user.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/user');
+      }
       onLogin(email, response.user.role);
     } catch (err) {
       setError(err.message || 'Invalid email or user not found');

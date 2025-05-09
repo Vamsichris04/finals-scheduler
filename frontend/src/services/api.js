@@ -95,7 +95,7 @@ export const deleteUser = async (userId) => {
 };
 
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 // Create axios instance with default config
 const api = axios.create({
@@ -116,9 +116,8 @@ api.interceptors.request.use((config) => {
 
 export const login = async (email) => {
   try {
-    const response = await api.post('/auth/login', { email });
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
+    const response = await api.post('/users/validate', { email });
+    if (response.data.success) {
       localStorage.setItem('user', JSON.stringify(response.data.user));
     }
     return response.data;

@@ -46,6 +46,7 @@
   display: flex;
   align-items: flex-start;
   margin-bottom: 40px;
+  padding-top: 100px;
 }
 
 .logo-container {
@@ -91,7 +92,7 @@
   align-items: center;
   width: 100%;
   max-width: 400px;
-  margin: 0 auto;
+  margin: 0 auto;  
 }
 
 .user-icon {

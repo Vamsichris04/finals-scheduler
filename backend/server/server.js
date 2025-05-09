@@ -23,10 +23,11 @@ mongoose.connect(process.env.MONGO_URI)
     console.error('MongoDB connection error:', err.message);
   });
 
-// A basic route to test if it's working
 app.use('/api/users', userRoutes);
 app.use('/api/finals', finalRoutes);
 app.use('/api/shifts', shiftRoutes);
+app.use('/api/validate', userRoutes);
+app.use('/api/users/validate', userRoutes);
 
 // Start the server
 app.listen(5000, () => console.log('Server started on port 5000'));

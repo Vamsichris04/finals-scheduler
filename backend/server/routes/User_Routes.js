@@ -45,6 +45,43 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.post('/validate', async (req, res) => {
+  const { email } = req.body;
+  const cleanedEmail = email.trim().toLowerCase();
+  if (!cleanedEmail) return res.status(400).json({ message: 'Email required' });
+
+  // Special-case for admin (optional)
+  if (cleanedEmail === 'sudersanamv@msoe.edu') {
+    return res.json({
+      success: true,
+      user: {
+        id: 'admin',
+        name: 'Admin',
+        email: cleanedEmail,
+        role: 'admin',
+        position: 'Admin'
+      }
+    });
+  }
+
+  const user = await User.findOne({ email: cleanedEmail });
+  if (!user) return res.status(401).json({ message: 'User not found' });
+
+  // Check if user is Tier 4
+  const isAdmin = user.position === 'Tier 4';
+
+  res.json({
+    success: true,
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: isAdmin ? 'admin' : user.role,
+      position: user.position
+    }
+  });
+});
+
 module.exports = router;
 
     
