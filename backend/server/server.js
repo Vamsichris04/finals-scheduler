@@ -24,7 +24,7 @@ mongoose.connect(process.env.MONGO_URI)
   });
 
 // A basic route to test if it's working
-app.use('/api/user', userRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/finals', finalRoutes);
 app.use('/api/shifts', shiftRoutes);
 

@@ -31,6 +31,20 @@ router.post('/', async (req, res) => {
   }
 });
 
+// @route   GET /api/users
+// @desc    Get all users
+// @access  Public
+router.get('/', async (req, res) => {
+  try {
+    // Only return name and position (or role) fields
+    const users = await User.find({}, 'name position role');
+    res.json(users);
+  } catch (err) {
+    console.error('Error fetching users:', err.message);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 module.exports = router;
 
     
