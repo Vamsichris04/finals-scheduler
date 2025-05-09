@@ -6,7 +6,14 @@ import axios from 'axios';
 const mockUsers = [
   { id: '1', name: 'John Doe', email: 'john.doe@msoe.edu', role: 'user' },
   { id: '2', name: 'Jane Smith', email: 'jane.smith@msoe.edu', role: 'user' },
-  { id: '3', name: 'Admin User', email: 'admin@msoe.edu', role: 'admin' }
+  { id: '3', name: 'Admin User', email: 'admin@msoe.edu', role: 'admin' },
+  { id: '4', name: 'User 4', email: 'user4@msoe.edu', role: 'user' },
+  { id: '5', name: 'User 5', email: 'user5@msoe.edu', role: 'user' },
+  { id: '6', name: 'User 6', email: 'user6@msoe.edu', role: 'user' },
+  { id: '7', name: 'User 7', email: 'user7@msoe.edu', role: 'user' },
+  { id: '8', name: 'User 8', email: 'user8@msoe.edu', role: 'user' },
+  { id: '9', name: 'User 9', email: 'user9@msoe.edu', role: 'user' },
+  { id: '10', name: 'User 10', email: 'user10@msoe.edu', role: 'user' }
 ];
 
 const mockBusyTimes = {
