@@ -33,9 +33,9 @@ users_col = db.get_collection('users')
 finals_col = db.get_collection('finals')
 shifts_col = db.get_collection('shifts')
 
-from csp import solve as csp_solve
-from sa import solve as sa_solve
-from ga import solve as ga_solve
+from algorithms.csp_algo import CSPAlgorithm
+from algorithms.sa_algo import SAAlgorithm
+from algorithms.ga_algo import GAAlgorithm
 
 app = FastAPI(title='IT Scheduler Python Backend')
 
@@ -127,13 +127,15 @@ def solve(req: SolveRequest):
     slots = generate_slots(mode)
 
     if algorithm == 'csp':
-        # hour_cap can be passed in opts if needed
-        res = csp_solve(users, slots, hour_cap=None)
+        algo = CSPAlgorithm(users, slots)
     elif algorithm == 'sa':
-        res = sa_solve(users, slots, sa_iters=req.sa_iters, iters=req.sa_iters)
+        algo = SAAlgorithm(users, slots)
     elif algorithm == 'ga':
-        res = ga_solve(users, slots, ga_pop=req.ga_pop, ga_gens=req.ga_gens, pop=req.ga_pop, gens=req.ga_gens)
+        algo = GAAlgorithm(users, slots)
     else:
         raise HTTPException(status_code=400, detail='Unknown algorithm; use csp|sa|ga')
+
+    algo.configure(sa_iters=req.sa_iters, ga_pop=req.ga_pop, ga_gens=req.ga_gens)
+    res = algo.solve()
 
     return { 'algorithm': algorithm, 'mode': mode, 'result': res }
