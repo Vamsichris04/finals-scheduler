@@ -3,14 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import msoeLogo from '../assets/MSOE.png';
 import './Header.css';
 
-function Header({ onLogout }) {
+function Header({ onLogout, onLogoClick }) {
   const navigate = useNavigate();
 
   const handleLogoClick = () => {
-    if (onLogout) {
+    if (onLogoClick) {
+      onLogoClick();
+    } else if (onLogout) {
       onLogout();
+      navigate('/');
+    } else {
+      navigate('/');
     }
-    navigate('/login');
   };
 
   return (

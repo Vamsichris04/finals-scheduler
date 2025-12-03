@@ -85,7 +85,7 @@ function LoginPage({ onLogin }) {
               {isLoading ? 'Logging in...' : 'Login'}
             </button>
             <div className="forgot-username">
-              <a href="#" className="forgot-link">Forgot Username?</a>
+              <a href="/too-bad" className="forgot-link">Forgot Username?</a>
             </div>
             <div className="not-implemented">
               ...Too bad I dont have that implemented yet :(

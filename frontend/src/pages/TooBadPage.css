@@ -1,0 +1,21 @@
+.too-bad-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+}
+
+.too-bad-content {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 100px;
+}
+
+.too-bad-content h1 {
+  font-size: 5rem;
+  color: #c8102e;
+  text-align: center;
+  font-weight: bold;
+} 

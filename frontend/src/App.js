@@ -4,6 +4,7 @@ import { getCurrentUser, logout as apiLogout } from './services/api';
 import LoginPage from './pages/LoginPage';
 import UserPage from './pages/UserPage';
 import AdminPage from './pages/AdminPage';
+import TooBadPage from './pages/TooBadPage';
 import './App.css';
 
 function App() {
@@ -68,6 +69,7 @@ function App() {
                 <Navigate to="/" />
             } 
           />
+          <Route path="/too-bad" element={<TooBadPage />} />
         </Routes>
       </div>
     </Router>
