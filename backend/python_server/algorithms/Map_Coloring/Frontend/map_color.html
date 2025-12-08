@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map Coloring Algorithm Visualizer</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .app { min-height: 100vh; background: linear-gradient(135deg, #0f172a, #1e293b); color: white; padding: 2rem; }
+        .container { max-width: 1600px; margin: 0 auto; }
+        .title { font-size: 2.5rem; font-weight: bold; text-align: center; margin-bottom: 0.5rem; background: linear-gradient(to right, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { text-align: center; color: #94a3b8; margin-bottom: 2rem; }
+        .grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+        @media (min-width: 1024px) { .grid { grid-template-columns: 350px 1fr; } }
+        .panel { background: #1e293b; border-radius: 0.5rem; padding: 1.5rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3); border: 1px solid #334155; }
+        .section-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: #60a5fa; }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; }
+        .select { width: 100%; background: #334155; border: 1px solid #475569; border-radius: 0.375rem; padding: 0.75rem; color: white; font-size: 0.9rem; }
+        .run-button { width: 100%; background: linear-gradient(to right, #3b82f6, #8b5cf6); color: white; font-weight: 600; padding: 0.75rem; border-radius: 0.5rem; border: none; cursor: pointer; font-size: 1rem; transition: all 0.2s; }
+        .run-button:hover:not(:disabled) { background: linear-gradient(to right, #2563eb, #7c3aed); transform: translateY(-1px); }
+        .run-button:disabled { background: #475569; cursor: not-allowed; }
+        .info-box { margin-top: 1rem; padding: 0.75rem; background: #0f172a; border-radius: 0.5rem; font-size: 0.875rem; border-left: 3px solid #60a5fa; }
+        .info-title { color: #60a5fa; font-weight: 600; margin-bottom: 0.5rem; }
+        .svg-container { background: #0f172a; border-radius: 0.5rem; padding: 1rem; min-height: 500px; }
+        .state { stroke: #1e293b; stroke-width: 1; transition: all 0.3s; cursor: pointer; }
+        .state:hover { stroke: #60a5fa; stroke-width: 2; filter: brightness(1.1); }
+        .edge { stroke: #475569; stroke-width: 1.5; opacity: 0.6; }
+        .node-circle { transition: fill 0.3s; cursor: pointer; }
+        .node-circle:hover { stroke: #60a5fa; stroke-width: 3; }
+        .node-text { font-weight: bold; font-size: 1.125rem; fill: white; pointer-events: none; }
+        .results-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .stat-card { background: #0f172a; border-radius: 0.375rem; padding: 1rem; border-left: 3px solid #8b5cf6; }
+        .stat-label { color: #94a3b8; font-size: 0.75rem; margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-value { font-family: 'Courier New', monospace; font-size: 1.25rem; font-weight: bold; }
+        .legend { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #334155; }
+        .legend-items { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+        .legend-item { display: flex; align-items: center; gap: 0.5rem; }
+        .legend-color { width: 24px; height: 24px; border-radius: 4px; border: 2px solid #334155; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+        
+        const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A'];
+        const colorNames = ['Red', 'Teal', 'Blue', 'Orange'];
+
+        const stateNames = {
+            0:"AL",1:"AK",2:"AZ",3:"AR",4:"CA",5:"CO",6:"CT",7:"DE",8:"FL",9:"GA",10:"HI",
+            11:"ID",12:"IL",13:"IN",14:"IA",15:"KY",16:"KS",17:"LA",18:"ME",19:"MD",20:"MA",
+            21:"MI",22:"MN",23:"MS",24:"MO",25:"MT",26:"NE",27:"NV",28:"NH",29:"NJ",30:"NM",
+            31:"NY",32:"NC",33:"ND",34:"OH",35:"OK",36:"OR",37:"PA",38:"RI",39:"SC",40:"SD",
+            41:"TN",42:"TX",43:"UT",44:"VT",45:"VA",46:"WA",47:"WV",48:"WY",49:"WI"
+        };
+
+        const MapColoringVisualizer = () => {
+            const [selectedMap, setSelectedMap] = useState('Triangle');
+            const [selectedAlgo, setSelectedAlgo] = useState('GA');
+            const [results, setResults] = useState(null);
+            const [isRunning, setIsRunning] = useState(false);
+            const [error, setError] = useState(null);
+            const usMapRef = useRef(null);
+
+            const maps = {
+                Triangle: { 
+                    positions: [{x:200,y:50},{x:100,y:200},{x:300,y:200}],
+                    adjacency: {0:[1,2], 1:[0,2], 2:[0,1]}
+                },
+                Square: { 
+                    positions: [{x:100,y:100},{x:300,y:100},{x:300,y:300},{x:100,y:300}],
+                    adjacency: {0:[1,3], 1:[0,2], 2:[1,3], 3:[0,2]}
+                },
+                Hexagon: { 
+                    positions: [{x:200,y:50},{x:320,y:125},{x:320,y:275},{x:200,y:350},{x:80,y:275},{x:80,y:125}],
+                    adjacency: {0:[1,5], 1:[0,2], 2:[1,3], 3:[2,4], 4:[3,5], 5:[4,0]}
+                },
+                ComplexMap: { 
+                    positions: [{x:200,y:50},{x:200,y:150},{x:350,y:100},{x:100,y:250},{x:300,y:250},{x:400,y:200},{x:200,y:350},{x:350,y:300}],
+                    adjacency: {0:[1,2], 1:[0,3,4], 2:[0,5], 3:[1,6], 4:[1,6,7], 5:[2,7], 6:[3,4], 7:[4,5]}
+                }
+            };
+
+            // Clear results when switching maps
+            useEffect(() => {
+                setResults(null);
+                setError(null);
+            }, [selectedMap]);
+
+            // Draw USA map when needed
+            useEffect(() => {
+                if (selectedMap === 'USA' && usMapRef.current) {
+                    drawUSMap();
+                }
+            }, [selectedMap, results]);
+
+            const drawUSMap = async () => {
+                const svg = d3.select(usMapRef.current);
+                svg.selectAll("*").remove();
+                
+                const width = 960;
+                const height = 600;
+                
+                const projection = d3.geoAlbersUsa().scale(1200).translate([width/2, height/2]);
+                const path = d3.geoPath().projection(projection);
+
+                try {
+                    const us = await d3.json('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json');
+                    const states = topojson.feature(us, us.objects.states);
+                    
+                    const stateGroup = svg.append("g");
+                    
+                    // FIPS code to array index mapping (D3 uses FIPS 1-56, we use 0-49 alphabetical)
+                    const fipsToIndex = {
+                        1:0, 2:1, 4:2, 5:3, 6:4, 8:5, 9:6, 10:7, 12:8, 13:9,
+                        15:10, 16:11, 17:12, 18:13, 19:14, 21:15, 20:16, 22:17, 23:18, 24:19,
+                        25:20, 26:21, 27:22, 28:23, 29:24, 30:25, 31:26, 32:27, 33:28, 34:29,
+                        35:30, 36:31, 37:32, 38:33, 39:34, 40:35, 41:36, 42:37, 44:38, 45:39,
+                        46:40, 47:41, 48:42, 49:43, 50:44, 51:45, 53:46, 54:47, 55:48, 56:49
+                    };
+                    
+                    stateGroup.selectAll("path")
+                        .data(states.features)
+                        .enter()
+                        .append("path")
+                        .attr("d", path)
+                        .attr("class", "state")
+                        .attr("fill", d => {
+                            const fipsCode = parseInt(d.id);
+                            const stateIndex = fipsToIndex[fipsCode];
+                            if (results?.solution && stateIndex !== undefined) {
+                                return colors[results.solution[stateIndex]] || '#64748b';
+                            }
+                            return '#64748b';
+                        })
+                        .attr("stroke", "#1e293b")
+                        .attr("stroke-width", 1)
+                        .append("title")
+                        .text(d => {
+                            const fipsCode = parseInt(d.id);
+                            const fipsToIndex = {
+                                1:0, 2:1, 4:2, 5:3, 6:4, 8:5, 9:6, 10:7, 12:8, 13:9,
+                                15:10, 16:11, 17:12, 18:13, 19:14, 21:15, 20:16, 22:17, 23:18, 24:19,
+                                25:20, 26:21, 27:22, 28:23, 29:24, 30:25, 31:26, 32:27, 33:28, 34:29,
+                                35:30, 36:31, 37:32, 38:33, 39:34, 40:35, 41:36, 42:37, 44:38, 45:39,
+                                46:40, 47:41, 48:42, 49:43, 50:44, 51:45, 53:46, 54:47, 55:48, 56:49
+                            };
+                            const stateIndex = fipsToIndex[fipsCode];
+                            return stateNames[stateIndex] || `State ${fipsCode}`;
+                        });
+                        
+                } catch (err) {
+                    console.error("Error loading US map:", err);
+                    // Fallback: simple grid layout for states
+                    const stateSize = 40;
+                    const cols = 10;
+                    for (let i = 0; i < 50; i++) {
+                        const x = (i % cols) * (stateSize + 5) + 50;
+                        const y = Math.floor(i / cols) * (stateSize + 5) + 50;
+                        svg.append("rect")
+                            .attr("x", x)
+                            .attr("y", y)
+                            .attr("width", stateSize)
+                            .attr("height", stateSize)
+                            .attr("fill", results?.solution ? colors[results.solution[i] || 0] : '#64748b')
+                            .attr("stroke", "#1e293b")
+                            .attr("class", "state");
+                        svg.append("text")
+                            .attr("x", x + stateSize/2)
+                            .attr("y", y + stateSize/2 + 3)
+                            .attr("style", "font-size:10px;fill:white;text-anchor:middle;font-weight:600")
+                            .text(stateNames[i]);
+                    }
+                }
+            };
+
+            const runAlgorithm = async () => {
+                setIsRunning(true);
+                setError(null);
+                try {
+                    const response = await fetch('http://localhost:5000/api/run', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ map: selectedMap, algorithm: selectedAlgo })
+                    });
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Server error');
+                    }
+                    const data = await response.json();
+                    setResults(data);
+                } catch (err) {
+                    console.error("Error:", err);
+                    setError(`Failed to run algorithm: ${err.message}. Make sure Flask server is running on port 5000.`);
+                } finally {
+                    setIsRunning(false);
+                }
+            };
+
+            const isUSA = selectedMap === 'USA';
+            const currentMap = maps[selectedMap];
+
+            return (
+                <div className="app">
+                    <div className="container">
+                        <h1 className="title">Map Coloring Algorithm Visualizer</h1>
+                        <p className="subtitle">Compare GA, SA, and CSP algorithms on graph coloring problems</p>
+
+                        {error && (
+                            <div style={{background:'rgba(127,29,29,0.5)',border:'1px solid #991b1b',borderRadius:'0.5rem',padding:'1rem',marginBottom:'1.5rem',color:'#fca5a5'}}>
+                                {error}
+                            </div>
+                        )}
+
+                        <div className="grid">
+                            <div className="panel">
+                                <h2 className="section-title">Controls</h2>
+                                <div className="form-group">
+                                    <label>Select Map</label>
+                                    <select value={selectedMap} onChange={(e) => setSelectedMap(e.target.value)} className="select">
+                                        <option value="Triangle">Triangle (3 regions)</option>
+                                        <option value="Square">Square (4 regions)</option>
+                                        <option value="Hexagon">Hexagon (6 regions)</option>
+                                        <option value="ComplexMap">Complex (8 regions)</option>
+                                        <option value="USA">🇺🇸 USA Map (50 states)</option>
+                                    </select>
+                                </div>
+                                <div className="form-group">
+                                    <label>Select Algorithm</label>
+                                    <select value={selectedAlgo} onChange={(e) => setSelectedAlgo(e.target.value)} className="select">
+                                        <option value="GA">Genetic Algorithm</option>
+                                        <option value="SA">Simulated Annealing</option>
+                                        <option value="CSP">CSP Backtracking</option>
+                                    </select>
+                                </div>
+                                <button onClick={runAlgorithm} disabled={isRunning} className="run-button">
+                                    {isRunning ? '⟳ Running...' : '▶ Run Algorithm'}
+                                </button>
+
+                                {isUSA && (
+                                    <div className="info-box">
+                                        <div className="info-title">📊 Challenge Map</div>
+                                        <div style={{color:'#94a3b8'}}>
+                                            The USA map has 50 states with complex adjacencies. This is an excellent test for comparing algorithm performance.
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="panel">
+                                <h2 className="section-title">{isUSA ? 'USA Map Visualization' : 'Graph Visualization'}</h2>
+                                <div className="svg-container">
+                                    {isUSA ? (
+                                        <svg key="usa-map" ref={usMapRef} viewBox="0 0 960 600" style={{width:'100%',height:'auto'}}></svg>
+                                    ) : (
+                                        <svg key={`map-${selectedMap}-${results ? 'colored' : 'default'}`} viewBox="0 0 450 400" style={{width:'100%',height:'auto'}}>
+                                            {currentMap && Object.entries(currentMap.adjacency).map(([node, neighbors]) => 
+                                                neighbors.map(neighbor => {
+                                                    const nodeIdx = parseInt(node);
+                                                    if (nodeIdx < neighbor) {
+                                                        return (
+                                                            <line
+                                                                key={`${nodeIdx}-${neighbor}`}
+                                                                className="edge"
+                                                                x1={currentMap.positions[nodeIdx].x}
+                                                                y1={currentMap.positions[nodeIdx].y}
+                                                                x2={currentMap.positions[neighbor].x}
+                                                                y2={currentMap.positions[neighbor].y}
+                                                            />
+                                                        );
+                                                    }
+                                                    return null;
+                                                })
+                                            )}
+                                            
+                                            {currentMap && currentMap.positions.map((pos, idx) => (
+                                                <g key={idx}>
+                                                    <circle
+                                                        cx={pos.x}
+                                                        cy={pos.y}
+                                                        r="30"
+                                                        fill={results?.solution ? colors[results.solution[idx] || 0] : '#64748b'}
+                                                        stroke="#1e293b"
+                                                        strokeWidth="3"
+                                                        className="node-circle"
+                                                    />
+                                                    <text
+                                                        x={pos.x}
+                                                        y={pos.y}
+                                                        textAnchor="middle"
+                                                        dominantBaseline="middle"
+                                                        className="node-text"
+                                                    >
+                                                        {idx}
+                                                    </text>
+                                                </g>
+                                            ))}
+                                        </svg>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {results && (
+                            <div className="panel">
+                                <h2 className="section-title">Results: {results.algoName}</h2>
+                                <div className="results-grid">
+                                    <div className="stat-card">
+                                        <div className="stat-label">Solution</div>
+                                        <div className="stat-value">
+                                            {results.solution ? (isUSA ? `${results.solution.length} states` : `[${results.solution.join(', ')}]`) : 'None'}
+                                        </div>
+                                    </div>
+                                    <div className="stat-card">
+                                        <div className="stat-label">Status</div>
+                                        <div className="stat-value" style={{color: results.penalty === 0 ? '#4ade80' : '#f87171'}}>
+                                            {results.penalty !== undefined ? (results.penalty === 0 ? '✓ Valid' : `✗ ${results.penalty}`) : '✓ Valid'}
+                                        </div>
+                                    </div>
+                                    {results.evaluated !== undefined && (
+                                        <div className="stat-card">
+                                            <div className="stat-label">Evaluations</div>
+                                            <div className="stat-value">{results.evaluated.toLocaleString()}</div>
+                                        </div>
+                                    )}
+                                    {results.firstSolutionAt && (
+                                        <div className="stat-card">
+                                            <div className="stat-label">First Solution</div>
+                                            <div className="stat-value">{results.firstSolutionAt.toLocaleString()}</div>
+                                        </div>
+                                    )}
+                                    {results.steps !== undefined && (
+                                        <div className="stat-card">
+                                            <div className="stat-label">States Explored</div>
+                                            <div className="stat-value">{results.steps.toLocaleString()}</div>
+                                        </div>
+                                    )}
+                                    {results.nodes !== undefined && (
+                                        <div className="stat-card">
+                                            <div className="stat-label">Backtrack Nodes</div>
+                                            <div className="stat-value">{results.nodes.toLocaleString()}</div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="legend">
+                                    <div style={{fontSize:'0.875rem',color:'#94a3b8',marginBottom:'0.75rem',fontWeight:600}}>Color Legend:</div>
+                                    <div className="legend-items">
+                                        {colors.map((color, idx) => (
+                                            <div key={idx} className="legend-item">
+                                                <div className="legend-color" style={{ backgroundColor: color }} />
+                                                <span style={{fontSize:'0.875rem'}}>{colorNames[idx]} (Color {idx})</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<MapColoringVisualizer />, document.getElementById('root'));
+    </script>
+</body>
+</html>
