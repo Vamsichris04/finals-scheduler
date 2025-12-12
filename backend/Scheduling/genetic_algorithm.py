@@ -11,11 +11,11 @@ class GeneticAlgorithm:
     """Genetic Algorithm solver for IT scheduling"""
 
     def __init__(self, environment: SchedulingEnvironment,
-                 population_size: int = 150,
-                 generations: int = 1000,
+                 population_size: int = 250,
+                 generations: int = 5000,
                  crossover_rate: float = 0.85,
-                 mutation_rate: float = 0.3,
-                 elitism_count: int = 10):
+                 mutation_rate: float = 0.35,
+                 elitism_count: int = 15):
         """
         Initialize GA solver
         

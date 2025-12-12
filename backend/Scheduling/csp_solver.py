@@ -14,8 +14,8 @@ class CSPSolver:
     """CSP solver with greedy construction and local search for IT scheduling"""
 
     def __init__(self, environment: SchedulingEnvironment,
-                 max_time: float = 120.0,
-                 local_search_iterations: int = 5000):
+                 max_time: float = 200.0,
+                 local_search_iterations: int = 15000):
         """
         Initialize CSP solver
 

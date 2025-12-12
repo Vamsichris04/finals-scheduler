@@ -97,7 +97,7 @@ class ScheduleExporter:
         with open(filename, 'w') as f:
             json.dump(output, f, indent=2)
         
-        print(f"  ✓ JSON: {filename}")
+        print(f" JSON: {filename}")
         return filename
     
     def export_to_csv(self, filename=None, output_dir='outputs'):
@@ -208,7 +208,7 @@ class ScheduleExporter:
     
     def export_all(self, output_dir='outputs', start_date=None):
         """Export to all formats"""
-        print(f"\n📁 Exporting to: {output_dir}/")
+        print(f"\nExporting to: {output_dir}/")
 
         files = {}
         files['json'] = self.export_to_json(output_dir=output_dir)
@@ -236,7 +236,7 @@ class ScheduleExporter:
         summary_file = f"{output_dir}/{base_name}_summary.txt"
         self._export_summary_txt(summary_file, penalty, details)
 
-        print(f"\n📁 Outputs saved to: {output_dir}/")
+        print(f"\nOutputs saved to: {output_dir}/")
         print(f"  ✓ Schedule: {base_name}_schedule.json")
         print(f"  ✓ Summary:  {base_name}_summary.txt")
 
@@ -317,11 +317,11 @@ class ScheduleExporter:
 
             # Status
             if penalty < 500:
-                f.write("Status: ✓✓ EXCELLENT - Ready to use\n\n")
+                f.write("Status: EXCELLENT - Ready to use\n\n")
             elif penalty < 1500:
-                f.write("Status: ✓ GOOD - Minor issues\n\n")
+                f.write("Status: GOOD \n\n")
             else:
-                f.write("Status: ⚠ NEEDS REVIEW\n\n")
+                f.write("Status: BAD\n\n")
 
             # Constraints
             f.write("-" * 40 + "\n")
@@ -392,30 +392,30 @@ class ScheduleValidator:
         penalty, details = env.evaluate_schedule(schedule)
         
         if verbose:
-            print("\n📊 Overall Score:")
+            print("\nOverall Score:")
             print(f"   Penalty: {penalty:.2f}")
             
             if penalty == 0:
-                print("   Status: ✓✓✓ PERFECT!")
+                print("   Status: PERFECT!")
             elif penalty < 500:
-                print("   Status: ✓✓ EXCELLENT - Ready to use")
+                print("   Status: EXCELLENT - Ready to use")
             elif penalty < 1500:
-                print("   Status: ✓ GOOD - Minor issues")
+                print("   Status: GOOD - Minor issues")
             else:
-                print("   Status: ⚠ NEEDS REVIEW - Has issues")
+                print("   Status: BAD - Has issues")
         
         # Critical constraints
         critical = ['coverage_violations', 'worker_conflicts', 'hour_violations', 'min_hour_violations']
         all_critical_pass = all(details.get(c, 0) == 0 for c in critical)
 
         if verbose:
-            print("\n🔴 Critical Constraints:")
+            print("\nCritical Constraints:")
             for constraint in critical:
                 count = details.get(constraint, 0)
                 if count == 0:
-                    print(f"   ✓ {constraint}: None")
+                    print(f"    {constraint}: None")
                 else:
-                    print(f"   ❌ {constraint}: {count}")
+                    print(f"    {constraint}: {count}")
 
         # Warnings
         if verbose:
@@ -428,11 +428,11 @@ class ScheduleValidator:
                 for constraint in warnings:
                     count = details.get(constraint, 0)
                     if count > 0:
-                        print(f"   ⚠ {constraint}: {count}")
+                        print(f"    {constraint}: {count}")
         
         # Worker hour summary
         if verbose:
-            print("\n👥 Worker Hours:")
+            print("\n Worker Hours:")
             worker_hours = {w.worker_id: 0 for w in env.workers}
             for worker_id in schedule:
                 if worker_id != -1:
@@ -449,13 +449,13 @@ class ScheduleValidator:
             print("\n" + "="*80)
             
             if penalty < 500 and all_critical_pass:
-                print("✓ VERDICT: Schedule is APPROVED for use")
+                print(" VERDICT: Schedule is APPROVED for use")
                 print("  → Safe to export and implement")
             elif penalty < 1500:
-                print("✓ VERDICT: Schedule is USABLE with minor issues")
+                print(" VERDICT: Schedule is USABLE with minor issues")
                 print("  → Review warnings but generally okay")
             else:
-                print("⚠ VERDICT: Schedule needs IMPROVEMENT")
+                print(" VERDICT: Schedule needs IMPROVEMENT")
                 print("  → Try running algorithm again or use different algorithm")
             
             print("="*80 + "\n")
@@ -490,7 +490,7 @@ def run_scheduler(algorithm: str = 'SA',
     loader.close()
     
     if not workers:
-        print("\n✗ No active workers found in database!")
+        print("\n No active workers found in database!")
         return None, None, None
     
     if verbose:
@@ -526,7 +526,7 @@ def run_scheduler(algorithm: str = 'SA',
         solution, penalty, stats = solver.solve(verbose=verbose)
         
     else:
-        print(f"✗ Unknown algorithm: {algorithm}")
+        print(f"Unknown algorithm: {algorithm}")
         return None, None, None
     
     elapsed = time.time() - start_time
@@ -669,8 +669,8 @@ Examples:
     
     parser.add_argument('--export', '-e',
                        type=str,
-                       choices=['json', 'csv', 'mongodb', 'all'],
-                       help='Export schedule to file(s)')
+                       choices=['simple', 'json', 'csv', 'mongodb', 'all'],
+                       help='Export schedule: simple (recommended), json, csv, mongodb, or all')
     
     parser.add_argument('--output-dir', '-o',
                        type=str,

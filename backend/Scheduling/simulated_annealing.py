@@ -12,10 +12,10 @@ class SimulatedAnnealing:
     """Simulated Annealing solver for IT scheduling"""
     
     def __init__(self, environment: SchedulingEnvironment,
-                 initial_temp: float = 2000.0,
-                 final_temp: float = 0.01,
-                 cooling_rate: float = 0.997,
-                 iterations_per_temp: int = 200):
+                 initial_temp: float = 3500.0,
+                 final_temp: float = 0.001,
+                 cooling_rate: float = 0.9985,
+                 iterations_per_temp: int = 300):
         """
         Initialize SA solver
 
