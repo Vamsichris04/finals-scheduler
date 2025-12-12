@@ -100,37 +100,53 @@ COLORS = [0, 1, 2, 3]
 
 @app.route('/api/run', methods=['POST'])
 def run_algorithm():
+    """
+    Execute a map coloring algorithm on the selected map.
+    
+    Expected JSON request body:
+        - map (str): Name of the map to solve (Triangle, Square, Hexagon, ComplexMap, USA)
+        - algorithm (str): Algorithm to use (GA, SA, CSP)
+    
+    Returns:
+        JSON response with solution array and algorithm-specific metrics
+    """
     try:
         data = request.json
         map_name = data.get('map')
         algorithm = data.get('algorithm')
         
+        # Validate map selection
         if map_name not in MAPS:
             return jsonify({'error': 'Invalid map'}), 400
         
+        # Extract map configuration
         map_data = MAPS[map_name]
         adjacency = map_data['adjacency']
         num_regions = map_data['num_regions']
         
-        # Increase parameters significantly for USA map
+        # Use enhanced parameters for large USA map, standard parameters for smaller maps
         if map_name == 'USA':
+            # Enhanced parameters for large-scale 50-state problem
             if algorithm == 'GA':
+                # Genetic Algorithm: larger population and more generations for USA
                 solution, penalty, evaluated, first_solution_at = genetic_algorithm(
                     adjacency, num_regions, COLORS,
-                    pop_size=500,  # Much larger
-                    generations=2000,
-                    mutation_rate=0.15
+                    pop_size=500,  # Large population for exploration
+                    generations=2000,  # More generations for convergence
+                    mutation_rate=0.15  # Higher mutation to maintain diversity
                 )
             elif algorithm == 'SA':
+                # Simulated Annealing: higher temperature and slower cooling for USA
                 solution, penalty, steps = simulated_annealing(
                     adjacency, num_regions, COLORS,
-                    initial_temp=5000,  # Much higher
-                    cooling_rate=0.9998
+                    initial_temp=5000,  # Higher starting temperature
+                    cooling_rate=0.9998  # Slower cooling rate
                 )
             elif algorithm == 'CSP':
+                # Constraint Satisfaction Problem: may struggle with large graphs
                 solution, nodes = solve_csp(adjacency, num_regions, COLORS)
         else:
-            # Standard parameters for simpler maps
+            # Standard parameters for smaller maps (Triangle, Square, Hexagon, ComplexMap)
             if algorithm == 'GA':
                 solution, penalty, evaluated, first_solution_at = genetic_algorithm(
                     adjacency, num_regions, COLORS
@@ -142,7 +158,9 @@ def run_algorithm():
             elif algorithm == 'CSP':
                 solution, nodes = solve_csp(adjacency, num_regions, COLORS)
         
+        # Format response based on algorithm used
         if algorithm == 'GA':
+            # Return GA-specific metrics: penalty, evaluations count, first solution found
             return jsonify({
                 'solution': solution,
                 'penalty': penalty,
@@ -151,6 +169,7 @@ def run_algorithm():
                 'algoName': 'Genetic Algorithm'
             })
         elif algorithm == 'SA':
+            # Return SA-specific metrics: penalty and number of steps taken
             return jsonify({
                 'solution': solution,
                 'penalty': penalty,
@@ -158,19 +177,23 @@ def run_algorithm():
                 'algoName': 'Simulated Annealing'
             })
         elif algorithm == 'CSP':
+            # Convert CSP solution from dict to list format for frontend
             if solution:
                 solution_list = [solution[i] for i in range(num_regions)]
             else:
                 solution_list = None
+            # Return CSP-specific metrics: number of nodes explored
             return jsonify({
                 'solution': solution_list,
                 'nodes': nodes,
                 'algoName': 'CSP Backtracking'
             })
         else:
+            # Invalid algorithm selection
             return jsonify({'error': 'Invalid algorithm'}), 400
             
     except Exception as e:
+        # Handle errors and return error response
         print(f"Error: {str(e)}")
         import traceback
         traceback.print_exc()
@@ -178,7 +201,14 @@ def run_algorithm():
 
 @app.route('/api/maps', methods=['GET'])
 def get_maps():
+    """
+    Retrieve all available maps and their configurations.
+    
+    Returns:
+        JSON object containing all maps with their region counts and adjacency data
+    """
     return jsonify(MAPS)
 
 if __name__ == '__main__':
+    # Start Flask development server on port 5000 with debug mode enabled
     app.run(debug=True, port=5000)
