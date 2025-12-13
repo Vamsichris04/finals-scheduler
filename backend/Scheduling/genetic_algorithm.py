@@ -8,7 +8,6 @@ from scheduling_env import SchedulingEnvironment, Worker
 import random
 
 class GeneticAlgorithm:
-    """Genetic Algorithm solver for IT scheduling"""
 
     def __init__(self, environment: SchedulingEnvironment,
                  population_size: int = 250,

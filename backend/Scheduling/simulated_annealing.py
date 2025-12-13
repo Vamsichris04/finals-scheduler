@@ -9,7 +9,6 @@ import random
 import math
 
 class SimulatedAnnealing:
-    """Simulated Annealing solver for IT scheduling"""
     
     def __init__(self, environment: SchedulingEnvironment,
                  initial_temp: float = 3500.0,

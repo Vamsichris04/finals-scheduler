@@ -264,3 +264,6 @@ if __name__ == "__main__":
     print("  from schedule_exporter import ScheduleExporter")
     print("  exporter = ScheduleExporter(env, solution, 'GA')")
     print("  exporter.export_all()")
+    
+    
+    
