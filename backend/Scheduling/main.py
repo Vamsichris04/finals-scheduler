@@ -5,7 +5,7 @@ Enhanced with export and validation features
 
 import sys
 import argparse
-from mongoDb_loader import MongoDBLoader
+from backend.Scheduling.Utils.mongoDb_loader import MongoDBLoader
 from scheduling_env import SchedulingEnvironment
 from genetic_algorithm import GeneticAlgorithm
 from simulated_annealing import SimulatedAnnealing

@@ -1,0 +1,152 @@
+[
+  {
+    "name": "Vamsi Sudersanam",
+    "userId": 611204,
+    "email": "sudersanamv@msoe.edu",
+    "role": "admin",
+    "position": "Tier 4",
+    "isCommuter": true,
+    "isActive": true,
+    "desiredHours": 19
+  },
+  {
+    "name": "Rory Schmidt",
+    "userId": 617759,
+    "email": "schmidtrc@msoe.edu",
+    "role": "user",
+    "position": "Tier 2",
+    "isCommuter": false,
+    "isActive": true,
+    "desiredHours": 18.5
+  },
+  {
+    "name": "Radhika Pawar",
+    "userId": 612983,
+    "email": "pawarr@msoe.edu",
+    "role": "user",
+    "position": "Tier 1",
+    "isCommuter": true,
+    "isActive": true,
+    "desiredHours": 18.5
+  },
+  {
+    "name": "Evan Nowlin",
+    "userId": 621911,
+    "email": "nowline@msoe.edu",
+    "role": "user",
+    "position": "Tier 1",
+    "isCommuter": false,
+    "isActive": false,
+    "desiredHours": 0
+  },
+  {
+    "name": "Mohan Li",
+    "userId": 632232,
+    "email": "limo@msoe.edu",
+    "role": "user",
+    "position": "Tier 1",
+    "isCommuter": false,
+    "isActive": true,
+    "desiredHours": 19.5
+  },
+  {
+    "name": "Chloe Hyatt",
+    "userId": 625877,
+    "email": "hyattc@msoe.edu",
+    "role": "user",
+    "position": "Tier 2",
+    "isCommuter": false,
+    "isActive": true,
+    "desiredHours": 17.5
+  },
+  {
+    "name": "Daniel Fischer",
+    "userId": 609097,
+    "email": "fischerda@msoe.edu",
+    "role": "user",
+    "position": "Tier 2",
+    "isCommuter": true,
+    "isActive": true,
+    "desiredHours": 10
+  },
+  {
+    "name": "Nathan Cobb",
+    "userId": 617700,
+    "email": "cobbn@msoe.edu",
+    "role": "user",
+    "position": "Tier 3",
+    "isCommuter": false,
+    "isActive": true,
+    "desiredHours": 20
+  },
+  {
+    "name": "Assane Ouedraogo",
+    "userId": 642730,
+    "email": "ouedraogoa@msoe.edu",
+    "role": "user",
+    "position": "Tier 1",
+    "isCommuter": true,
+    "isActive": true,
+    "desiredHours": 19.5
+  },
+  {
+    "name": "David Bolin",
+    "userId": 635692,
+    "email": "bolind@msoe.edu",
+    "role": "user",
+    "position": "Tier 1",
+    "isCommuter": false,
+    "isActive": true,
+    "desiredHours": 16
+  },
+  {
+    "name": "Ethan Zimmer",
+    "userId": 642101,
+    "email": "zimmere@msoe.edu",
+    "role": "user",
+    "position": "Tier 1",
+    "isCommuter": false,
+    "isActive": true,
+    "desiredHours": 15
+  },
+  {
+    "name": "Daniel Chitan",
+    "userId": 640230,
+    "email": "chitand@msoe.edu",
+    "role": "user",
+    "position": "Tier 1",
+    "isCommuter": false,
+    "isActive": true,
+    "desiredHours": 16.5
+  },
+  {
+    "name": "Alexander Wilson",
+    "userId": 642707,
+    "email": "wilsonkodisa@msoe.edu",
+    "role": "user",
+    "position": "Tier 1",
+    "isCommuter": false,
+    "isActive": true,
+    "desiredHours": 18.5
+  },
+  {
+    "name": "Matthew Suprise",
+    "userId": 637971,
+    "email": "suprisem@msoe.edu",
+    "role": "user",
+    "position": "Tier 1",
+    "isCommuter": false,
+    "isActive": true,
+    "desiredHours": 11
+  },
+  {
+    "name": "Cheng'en Ma",
+    "userId": 636100,
+    "email": "mac@msoe.edu",
+    "role": "user",
+    "position": "Tier 1",
+    "isCommuter": false,
+    "isActive": true,
+    "desiredHours": 16
+  }
+]

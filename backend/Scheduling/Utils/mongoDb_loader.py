@@ -154,7 +154,7 @@ if __name__ == "__main__":
         loader.print_loaded_data(workers)
         loader.close()
         
-        print("\n✓ Successfully loaded data from MongoDB!")
+        print("\nSuccessfully loaded data from MongoDB!")
         
     except Exception as e:
         print(f"\n✗ Error loading data: {e}")

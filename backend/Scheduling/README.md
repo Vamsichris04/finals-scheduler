@@ -1,312 +1,163 @@
-# IT Help Desk Scheduler - Core Implementation
+# IT Help Desk Scheduler
 
-## Overview
+Scheduling system using AI algorithms (GA, SA, CSP) to generate work schedules for IT Help Desk student workers.
 
-This is a scheduling system that uses AI algorithms (Genetic Algorithm, Simulated Annealing, CSP) to automatically generate work schedules for MSOE IT Help Desk student workers. It reads data directly from your MongoDB database.
-
-## Files
-
-```
-scheduler-core/
-├── main.py                    # Main entry point - run this!
-├── mongodb_loader.py          # Loads data from MongoDB
-├── scheduling_environment.py  # Problem definition & constraints
-├── genetic_algorithm.py       # GA implementation
-├── simulated_annealing.py     # SA implementation
-├── csp_solver.py             # CSP implementation
-├── requirements.txt          # Dependencies
-├── README.md                 # This file
-└── INDEX.md                  # Detailed documentation
-```
-
-## Quick Start
+## How to Run
 
 ### 1. Install Dependencies
-
 ```bash
 pip install pymongo numpy matplotlib
 ```
 
-Or use requirements file:
+### 2. Run the Scheduler
 ```bash
-pip install -r requirements.txt
-```
-
-### 2. Make Sure MongoDB is Running
-
-Your MongoDB should have:
-- Database: `finals_scheduler`
-- Collections: `users`, `finals`
-
-### 3. Run the Scheduler
-
-**Recommended (fastest and best results):**
-```bash
+# Simulated Annealing (recommended - fastest)
 python main.py --algorithm SA --show-schedule
-```
 
-**Try Genetic Algorithm:**
-```bash
+# Genetic Algorithm
 python main.py --algorithm GA --show-schedule
-```
 
-**Compare All Three:**
-```bash
-python main.py --compare
-```
-
-## Command-Line Options
-
-```bash
-# Basic usage
-python main.py --algorithm SA              # Run Simulated Annealing
-python main.py --algorithm GA              # Run Genetic Algorithm
-python main.py --algorithm CSP             # Run CSP solver
-
-# Show full schedule
-python main.py --algorithm SA --show-schedule
+# CSP Solver
+python main.py --algorithm CSP --show-schedule
 
 # Compare all algorithms
 python main.py --compare
 
-# Different schedule types
-python main.py --algorithm SA --schedule-type finals    # Finals week
-python main.py --algorithm SA --schedule-type regular   # Regular semester
-
-# Custom MongoDB connection
-python main.py --algorithm SA --db-host mongodb://localhost:27017/ --db-name finals_scheduler
-
-# Quiet mode (less output)
-python main.py --algorithm SA --quiet
+# Export schedule
+python main.py --algorithm SA --export simple
 ```
 
-## MongoDB Schema
-
-### Users Collection
-
-```javascript
-{
-  "_id": ObjectId,
-  "name": "John Doe",
-  "userId": 123456,                    // Unique employee ID
-  "email": "doe@msoe.edu",
-  "role": "user",                      // or "admin"
-  "position": "Tier 2",                // Tier 1, 2, 3, or 4
-  "isCommuter": false,                 // true if can't work before 9am
-  "isActive": true,                    // Only active users scheduled
-  "desiredHours": 15                   // Target hours per week
-}
-```
-
-### Finals Collection
-
-```javascript
-{
-  "_id": ObjectId,
-  "userId": "123456",                  // String reference to user
-  "date": "2024-12-18T00:00:00.000Z", // ISO date
-  "startTime": "14:00",                // HH:MM format
-  "endTime": "16:00"                   // HH:MM format
-}
-```
-
-## Algorithm Comparison
-
-| Algorithm | Speed | Quality | When to Use |
-|-----------|-------|---------|-------------|
-| **SA** (Simulated Annealing) | Fast (10-30s) | Best | **Recommended** - Best balance |
-| **GA** (Genetic Algorithm) | Medium (20-40s) | Good | When SA gets stuck |
-| **CSP** (Backtracking) | Slow (30-60s) | Variable | For verification |
-
-**Recommendation:** Start with SA. It's fastest and usually finds the best schedules.
-
-## Understanding Results
-
-### Penalty Scores
-
-The algorithm outputs a "penalty" score where lower is better:
-
-- **0**: Perfect! All constraints satisfied
-- **< 500**: Excellent schedule
-- **500-1500**: Good schedule with minor issues
-- **> 1500**: Has problems, try running again
-
-### Common Violations
-
-- `coverage_violations`: Not enough workers for some shifts
-- `worker_conflicts`: Worker scheduled during finals/busy time
-- `hour_violations`: Worker has more than 20 hours
-- `fairness_violations`: Unbalanced hour distribution
-- `morning_shift_violations`: Too many morning shifts for one worker
-
-## Constraints Implemented
-
-All constraints from your requirements are enforced:
-
-✓ **Worker Constraints:**
-- Max 20 hours per week
-- Desired hours (10-18 typical)
-- 4 tiers (1=entry, 2=experienced, 3=inventory tech, 4=manager)
-- Commuters can't work before 9 AM
-- Finals/busy times respected
-
-✓ **Shift Requirements:**
-- Window shifts: 1-2 workers required
-- Remote shifts: 1-4 workers required
-- Tier 3-4 prefer Remote (but can do Window if needed)
-
-✓ **Operating Hours:**
-- **Finals:** Mon-Thu 7:30am-8pm, Fri 7:30am-5pm
-- **Regular:** Mon-Thu 7:30am-8pm, Fri 7:30am-5pm, Sat 10am-6pm
-
-✓ **Fairness:**
-- Balanced hours across workers
-- Limited morning shifts (max 2 per worker)
-- Shift lengths 1.5-6 hours
-- No gaps in coverage
-
-## Customizing Parameters
-
-Edit `main.py` to tune algorithm parameters:
-
-### Genetic Algorithm
-```python
-solver = GeneticAlgorithm(
-    env,
-    population_size=100,    # More = better exploration (slower)
-    generations=300,        # More = better convergence (slower)
-    crossover_rate=0.8,     # 0.7-0.9 typical
-    mutation_rate=0.2,      # 0.1-0.3 typical
-    elitism_count=5         # Best individuals to preserve
-)
-```
-
-### Simulated Annealing
-```python
-solver = SimulatedAnnealing(
-    env,
-    initial_temp=1000.0,        # Higher = more exploration
-    final_temp=0.1,             # When to stop
-    cooling_rate=0.995,         # Slower = more thorough (0.99-0.999)
-    iterations_per_temp=50      # More = better quality
-)
-```
-
-### CSP Solver
-```python
-solver = CSPSolver(
-    env,
-    max_time=60.0,              # Time limit in seconds
-    use_forward_checking=True,  # Enable constraint propagation
-    use_mrv=True                # Use MRV heuristic
-)
-```
-
-## Troubleshooting
-
-### "ModuleNotFoundError: pymongo"
-```bash
-pip install pymongo
-```
-
-### "Connection refused" or "MongoDB not found"
-Make sure MongoDB is running:
-```bash
-# Check if MongoDB is running
-mongosh
-```
-
-### "No active workers found"
-Check your database:
-```javascript
-// In mongosh
-use finals_scheduler
-db.users.find({isActive: true}).count()
-```
-
-### Results seem poor (high penalty)
-Try:
-1. Run SA multiple times (it's fast)
-2. Check if workers have too many conflicts
-3. Verify operating hours match your needs
-4. Try GA for different approach
-
-## Testing Without MongoDB
-
-To test algorithms without MongoDB, you can modify `main.py` to use sample data:
-
-```python
-# Add at top of main.py
-from sample_data import generate_sample_workers
-
-# Replace MongoDB loading with:
-workers = generate_sample_workers(15)
-```
-
-Then create a simple `sample_data.py` with test workers.
-
-## Output Example
-
-```
-================================================================================
-RUNNING SA ALGORITHM
-================================================================================
-Initial solution cost: 1245.50
-Iteration 1000, Temp=606.53, Best Cost=456.20, Current Cost=523.10
-...
-SA completed. Best cost: 234.50
-
-================================================================================
-RESULTS
-================================================================================
-Algorithm: SA
-Runtime: 12.34 seconds
-Final Penalty: 234.50
-
-Constraint Violations:
-  fairness_violations: 3
-  morning_shift_violations: 1
-
-✓ EXCELLENT SCHEDULE - Minor violations only
-```
-
-## Next Steps
-
-1. **Test it works:** `python main.py --algorithm SA`
-2. **View schedule:** `python main.py --algorithm SA --show-schedule`
-3. **Compare algorithms:** `python main.py --compare`
-4. **Integrate:** Use generated schedule in your application
-
-## Integration with Your App
-
-The schedule can be converted to MongoDB Shifts format. See `main.py` for the schedule structure - each slot in the solution array corresponds to a shift that can be saved to your Shifts collection.
-
-## For Your Project Report
-
-This implementation demonstrates:
-- ✓ Three different AI algorithms (GA, SA, CSP)
-- ✓ Real-world constraint satisfaction problem
-- ✓ Direct integration with existing database
-- ✓ Comparative analysis of algorithms
-- ✓ Practical scheduling solution
-
-## Need Help?
-
-1. Read `INDEX.md` for detailed documentation
-2. Check code comments in each `.py` file
-3. Try `python main.py --help` for all options
-4. Run with `--compare` to see which algorithm works best
+### Command-Line Arguments
+- `--algorithm` - GA, SA, or CSP (default: SA)
+- `--compare` - Run and compare all three algorithms
+- `--validate` - Run validation checks
+- `--export` - Export format: simple, json, csv, mongodb, all
+- `--show-schedule` - Print full schedule
+- `--output-dir` - Output directory for exports
 
 ---
 
-**Quick Commands:**
-```bash
-# Most common usage
-python main.py --algorithm SA --show-schedule
+## File Descriptions
 
-# Quick comparison
-python main.py --compare
+### main.py
+Main entry point for running the scheduler.
 
-# Full output
-python main.py --algorithm SA --show-schedule > schedule.txt
-```
+**Classes:**
+- `ScheduleExporter` - Exports schedules to JSON, CSV, MongoDB formats
+  - `export_to_json()` - JSON with metadata and constraints
+  - `export_to_csv()` - CSV for spreadsheets
+  - `export_worker_summary()` - Worker hours and fairness metrics
+  - `export_to_mongodb_format()` - MongoDB Shifts collection format
+  - `export_all()` - All formats
+- `ScheduleValidator` - Validates generated schedules
+  - `quick_validate()` - Fast validation with penalty report
+
+**Functions:**
+- `run_scheduler()` - Runs a single algorithm with MongoDB data
+- `compare_algorithms()` - Runs all three and compares results
+- `main()` - CLI interface
+
+---
+
+### scheduling_env.py
+Problem definition with constraints and fitness evaluation.
+
+**Classes:**
+- `Worker` - Represents a student worker
+  - `is_available(day, hour)` - Checks availability based on busy times and commuter status
+- `ShiftSlot` - Represents a time slot needing coverage
+- `SchedulingEnvironment` - Main scheduling problem
+  - `evaluate_schedule()` - Returns penalty score and constraint violations
+  - `get_available_workers()` - Finds available workers for a slot
+  - `schedule_to_matrix()` - Converts schedule to readable matrix
+  - `print_schedule()` - Displays human-readable schedule
+
+**Constraints Evaluated:** Coverage violations, worker conflicts, hour violations (max 20), min hours (14), shift length (2-6 hrs), tier mismatches, fairness, morning shifts
+
+---
+
+### genetic_algorithm.py
+Genetic Algorithm implementation - evolves population of schedules.
+
+**Methods:**
+- `initialize_population()` - Creates initial population with valid block assignments
+- `calculate_fitness()` - Evaluates penalty (lower = better)
+- `select_parents()` - Tournament selection
+- `crossover()` - Two-point crossover
+- `mutate()` - 4 strategies: extend block, swap blocks, fill gaps, reassign slots
+- `repair_chromosome()` - Fixes availability violations
+- `solve()` - Main GA loop with elitism
+
+---
+
+### simulated_annealing.py
+Simulated Annealing - temperature-based optimization.
+
+**Methods:**
+- `generate_initial_solution()` - Creates initial solution with block assignments
+- `calculate_cost()` - Evaluates penalty
+- `generate_neighbor()` - 5 strategies: swap, extend, shrink, reassign, fill empty
+- `acceptance_probability()` - Metropolis criterion for accepting worse solutions
+- `solve()` - Main SA loop with temperature cooling
+
+---
+
+### csp_solver.py
+CSP Solver - two-phase greedy + local search approach.
+
+**Methods:**
+- `_build_greedy_solution()` - Phase 1: Greedy construction prioritizing workers under min hours
+- `_local_search()` - Phase 2: Improves via swap, reassign, extend, fill gap moves
+- `solve()` - Orchestrates both phases
+
+---
+
+### run_comparison.py
+Algorithm comparison with visualizations.
+
+**Functions:**
+- `load_workers_from_mongo()` - Loads from MongoDB
+- `load_workers_from_datafiles()` - Loads from local JSON files
+- `run_ga()`, `run_sa()`, `run_csp()` - Run individual algorithms
+- `plot_final_penalty_comparison()` - Bar chart of penalties
+- `plot_convergence()` - Convergence analysis
+- `plot_constraint_violations()` - Constraint breakdown
+- `plot_runtime_comparison()` - Runtime metrics
+- `plot_worker_hours_distribution()` - Worker hours vs desired
+- `generate_summary_report()` - Text summary
+
+---
+
+### Utils/mongoDb_loader.py
+MongoDB data integration.
+
+**Methods:**
+- `load_workers()` - Fetches active users and finals, returns Worker objects
+- `parse_tier()` - Converts position string to tier integer
+- `get_day_from_date()` - Parses ISO date to day of week
+- `parse_time()` - Converts HH:MM to hour integer
+- `print_loaded_data()` - Displays loaded workers
+- `close()` - Closes MongoDB connection
+
+---
+
+### Utils/validator.py
+Schedule validation utility.
+
+**Functions:**
+- `quick_validate()` - Validates schedule, classifies quality (Perfect/Excellent/Good/Needs Review), checks critical constraints, reports coverage gaps
+
+---
+
+### Utils/exporter.py
+Export utilities (same as ScheduleExporter in main.py).
+
+**Methods:**
+- `export_to_json()`, `export_to_csv()`, `export_worker_summary()`, `export_to_mongodb_format()`, `export_all()`
+
+---
+
+### Data/
+Contains sample data files:
+- `Users.json` - Sample worker data
+- `Finals.json` - Sample finals schedule data
