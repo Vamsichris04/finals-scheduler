@@ -1,6 +1,29 @@
 """
-Test class for Map Coloring algorithms on various test maps
+Map Coloring Algorithm Test Suite
+
+This comprehensive test module evaluates the performance and correctness of the three
+map coloring algorithms (Genetic Algorithm, Simulated Annealing, and CSP) across
+multiple benchmark problem instances of varying complexity and structure.
+
+The test suite includes:
+- Triangle: Complete graph K3 (requires 3 colors minimum)
+- Square: Cycle graph C4 (requires 2 colors minimum)
+- Hexagon: Cycle graph C6 (requires 2 colors minimum)
+- ComplexMap: 8-region graph with varying connectivity patterns
+
+Key Features:
+- Standardized test cases with known optimal solutions
+- Comparative algorithm performance analysis
+- Solution validity verification for each test map
+- Detailed output showing solutions, penalties, and performance metrics
+- Support for algorithm parameter tuning and comparison
+
+This testing framework provides systematic validation of algorithmic implementations
+across different graph topologies, ensuring robustness and correctness for the Map
+Coloring application. It serves as both a development tool for algorithm refinement
+and a benchmark for comparing different approaches to constraint satisfaction problems.
 """
+
 from map_ga_algo import genetic_algorithm
 from map_sa_algo import simulated_annealing
 from map_csp_algo import solve_csp

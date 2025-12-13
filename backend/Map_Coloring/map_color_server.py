@@ -1,3 +1,30 @@
+"""
+Map Coloring Server
+
+This module implements a Flask-based web server that provides REST API endpoints
+for solving map coloring problems using three different AI algorithms: Genetic Algorithm (GA),
+Simulated Annealing (SA), and Constraint Satisfaction Problem (CSP) with backtracking.
+
+The server supports multiple predefined maps including simple geometric shapes (Triangle, Square,
+Hexagon, ComplexMap) and a real-world USA map with 50 states. Each algorithm can be invoked
+via HTTP POST requests to the /api/run endpoint, returning JSON responses with the coloring
+solution and algorithm-specific performance metrics.
+
+Key Features:
+- RESTful API design with CORS support for web frontend integration
+- Support for multiple map configurations and algorithm parameters
+- Performance metrics tracking (evaluations, steps, nodes explored)
+- Error handling and validation for API requests
+- Integration with separate algorithm modules for modularity
+
+API Endpoints:
+- POST /api/run: Execute a map coloring algorithm on a selected map
+- GET /api/maps: Retrieve all available map configurations
+
+This server serves as the backend for the Map Coloring frontend application, enabling
+interactive exploration of AI algorithms for constraint satisfaction problems.
+"""
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import sys

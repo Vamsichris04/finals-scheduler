@@ -1,3 +1,31 @@
+"""
+Map Coloring Simulated Annealing Solver
+
+This module implements Simulated Annealing (SA) for the map coloring problem, a
+probabilistic optimization technique inspired by the metallurgical annealing process.
+SA escapes local optima by accepting worse solutions probabilistically, gradually
+reducing this acceptance probability through a cooling schedule.
+
+The algorithm features:
+- Smart initialization: Greedy coloring to start with low-conflict solutions
+- Metropolis criterion: Probabilistic acceptance of uphill moves
+- Adaptive cooling: Exponential temperature decay with configurable rates
+- Intelligent neighbor generation: Preferential selection of non-conflicting moves
+- Reheating mechanism: Automatic temperature increases when stuck in local optima
+- Early termination: Immediate return upon finding perfect solutions
+
+Key Features:
+- Single-solution trajectory search with probabilistic hill climbing
+- Temperature-based exploration vs. exploitation balance
+- Adaptive parameters for different problem scales (simple maps vs. USA)
+- Comprehensive performance tracking (steps taken, best solution found)
+- Robust local optima escape through controlled randomization
+
+SA provides a good balance between solution quality and computational efficiency,
+often finding high-quality colorings for complex maps while being simpler to
+implement than population-based methods like genetic algorithms.
+"""
+
 import random
 import math
 

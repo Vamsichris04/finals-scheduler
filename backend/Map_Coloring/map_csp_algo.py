@@ -1,3 +1,29 @@
+"""
+Map Coloring Constraint Satisfaction Problem (CSP) Solver
+
+This module implements a complete Constraint Satisfaction Problem solver for the map coloring
+problem using backtracking search with advanced heuristics and constraint propagation techniques.
+
+The CSP approach models map coloring as a constraint satisfaction problem where:
+- Variables: Regions to be colored
+- Domains: Available colors for each region
+- Constraints: Adjacent regions must have different colors
+
+Key Features:
+- Backtracking search with systematic exploration of solution space
+- Minimum Remaining Values (MRV) heuristic for variable selection
+- Forward checking for constraint propagation and domain pruning
+- Conflict detection and early termination for infeasible branches
+- Comprehensive performance tracking (nodes explored)
+
+The algorithm guarantees finding a solution if one exists with the given color constraints,
+making it ideal for exact solving of map coloring problems. It performs particularly well
+on structured problems like planar graphs and can handle the full USA 50-state map.
+
+This implementation serves as one of three algorithm options in the Map Coloring application,
+providing guaranteed correctness and detailed search statistics.
+"""
+
 def solve_csp(adjacency, num_regions, colors):
     """
     Solve map coloring using CSP with backtracking and forward checking

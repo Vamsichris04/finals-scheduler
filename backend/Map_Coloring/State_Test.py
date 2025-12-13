@@ -1,5 +1,27 @@
 """
-Test Map Coloring Algorithms on USA Map (50 states)
+USA Map Coloring Algorithm Testing Suite
+
+This test module provides comprehensive validation and performance analysis of the three
+map coloring algorithms (CSP, Simulated Annealing, and Genetic Algorithm) on the real-world
+USA map consisting of all 50 states with their actual geographical adjacencies.
+
+The testing suite performs:
+- Algorithm execution on the complex 50-state constraint graph
+- Solution validity verification (no adjacent states with same color)
+- Performance metrics collection (nodes explored, steps taken, evaluations)
+- Detailed violation reporting for invalid solutions
+- Comparative analysis across different algorithmic approaches
+
+Key Features:
+- Complete USA state adjacency data with 50 nodes and complex connectivity
+- Automated solution verification with conflict detection
+- Detailed error reporting showing specific state color conflicts
+- Performance benchmarking for algorithm comparison
+- Support for different algorithm parameter configurations
+
+This testing framework ensures the reliability and correctness of map coloring solutions
+for large-scale, real-world constraint satisfaction problems, serving as validation for
+the Map Coloring application's algorithmic implementations.
 """
 
 from map_ga_algo import genetic_algorithm

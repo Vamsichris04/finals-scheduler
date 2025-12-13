@@ -1,3 +1,30 @@
+"""
+Map Coloring Genetic Algorithm Solver
+
+This module implements a Genetic Algorithm (GA) for solving the map coloring problem,
+an NP-hard constraint satisfaction problem. The GA uses evolutionary principles to
+search for valid colorings through iterative improvement of a population of candidate solutions.
+
+The algorithm employs several advanced techniques:
+- Smart initialization: Greedy coloring to create diverse starting population
+- Tournament selection: Probabilistic selection favoring fitter individuals
+- Two-point crossover: Genetic recombination between parent solutions
+- Adaptive mutation: Conflict-reducing color changes with dynamic mutation rates
+- Elitism: Preservation of best solutions across generations
+- Stagnation detection: Automatic mutation rate increases when progress stalls
+
+Key Features:
+- Population-based search exploring multiple solution candidates simultaneously
+- Adaptive parameters based on problem size (standard vs. USA map)
+- Comprehensive performance tracking (evaluations, first solution generation)
+- Early termination upon finding perfect solutions
+- Robust handling of local optima through mutation and diversity
+
+This GA implementation provides probabilistic approximate solutions, often finding
+optimal or near-optimal colorings efficiently, especially for large complex maps
+like the 50-state USA map where exact methods may be computationally expensive.
+"""
+
 import random
 
 def compute_penalty(state, adjacency):
