@@ -1,6 +1,5 @@
 """
-Run this to test your actual algorithm outputs
-Usage: python verify_real_solutions.py
+Test Map Coloring Algorithms on USA Map (50 states)
 """
 
 from map_ga_algo import genetic_algorithm
@@ -98,7 +97,7 @@ def test_algorithm(name, algo_func, *args):
             if solution_dict:
                 solution = [solution_dict[i] for i in range(50)]
             else:
-                print("❌ No solution found!")
+                print("No solution found!")
                 return
             print(f"Nodes explored: {nodes:,}")
         elif name == "SA":
@@ -114,7 +113,7 @@ def test_algorithm(name, algo_func, *args):
         # Verify the solution
         is_valid, violations = verify_solution(solution, US_ADJACENCY)
         
-        print(f"\n{'✅ VALID' if is_valid else '❌ INVALID'} - Actual violations: {len(violations)}")
+        print(f"\n{'VALID' if is_valid else 'INVALID'} - Actual violations: {len(violations)}")
         
         if not is_valid:
             print(f"\nFirst 10 violations:")
@@ -128,7 +127,7 @@ def test_algorithm(name, algo_func, *args):
         print(f"\nSolution: {solution[:20]}... (showing first 20 states)")
         
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"Error: {e}")
         import traceback
         traceback.print_exc()
 

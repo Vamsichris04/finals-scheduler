@@ -1,3 +1,6 @@
+"""
+Test class for Map Coloring algorithms on various test maps
+"""
 from map_ga_algo import genetic_algorithm
 from map_sa_algo import simulated_annealing
 from map_csp_algo import solve_csp
@@ -54,14 +57,14 @@ COLORS = [0, 1, 2, 3]
 # ------------------------------
 for map_name, map_data in MAPS.items():
     print("\n" + "=" * 50)
-    print(f"🗺️ Testing Map: {map_name}")
+    print(f"Testing Map: {map_name}")
     print("=" * 50)
 
     adjacency = map_data["adjacency"]
     num_regions = map_data["num_regions"]
 
     # ---------------- GA ----------------
-    print("🧬 Genetic Algorithm")
+    print("Genetic Algorithm")
     colors = [0, 1, 2, 3]  # define colors here
 
     ga_solution, ga_penalty, ga_evaluated, ga_first_solution = genetic_algorithm(
@@ -75,7 +78,7 @@ for map_name, map_data in MAPS.items():
         print("First valid solution found at evaluation:", ga_first_solution)
 
     # ---------------- SA ----------------
-    print("\n🔥 Simulated Annealing")
+    print("\nSimulated Annealing")
     sa_solution, sa_penalty, sa_steps = simulated_annealing(
         adjacency,
         num_regions,
@@ -87,7 +90,7 @@ for map_name, map_data in MAPS.items():
     print("States explored:", sa_steps)
 
     # ---------------- CSP ----------------
-    print("\n🧠 Constraint Satisfaction (CSP)")
+    print("\nConstraint Satisfaction (CSP)")
     csp_solution, csp_nodes = solve_csp(
         adjacency,
         num_regions,

@@ -60,7 +60,9 @@ Map_Coloring/
 ├── map_ga_algo.py           # Genetic algorithm implementation
 ├── map_sa_algo.py           # Simulated annealing implementation
 ├── map_color_server.py      # Flask backend server
-├── README.md                # This file
+├── Test.py                  # Test class for algorithms on various maps
+├── State_Test.py            # Test on USA map (50 states)
+├── README-MAPCOLORING.md    # This file
 └── Frontend/
     └── map_color.html       # Interactive visualizer
 ```
@@ -162,6 +164,33 @@ Runs the selected algorithm on the selected map.
 #### GET `/api/maps`
 
 Returns available maps and their configurations.
+
+## Testing
+
+The project includes test scripts to verify the correctness of the algorithms on various maps.
+
+### Running Tests
+
+1. **Test on Small Maps** (`Test.py`):
+   - Tests all three algorithms (CSP, GA, SA) on predefined small maps (Triangle, Square, Hexagon, ComplexMap).
+   - Run with: `python Test.py`
+
+2. **Test on USA Map** (`State_Test.py`):
+   - Tests algorithms specifically on the 50-state USA map.
+   - Includes solution verification to ensure no adjacent states have the same color.
+   - Run with: `python State_Test.py`
+
+### Test Maps
+
+- **Triangle**: 3 regions (minimum 3 colors)
+- **Square**: 4 regions (minimum 2 colors)
+- **Hexagon**: 6 regions (minimum 3 colors)
+- **ComplexMap**: 8 regions (minimum 3 colors)
+- **USA**: 50 states (minimum 4 colors)
+
+### Verification
+
+The test scripts verify solutions by checking for color conflicts between adjacent regions. A valid solution has zero violations.
 
 ## Algorithm Parameters
 
